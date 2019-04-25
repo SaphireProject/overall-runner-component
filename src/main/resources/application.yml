@@ -1,0 +1,18 @@
+server:
+  port: 8084
+  contextPath: "/"
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mr
+    username: postgres
+    password: 1234
+    generate-ddl: false
+  jpa:
+    show-sql: true
+    hibernate.ddl-auto: validate
+  mail:
+    host: smtp.yandex.ru
+    username: user.game.access
+    password: 390PEydq738
+    port: 465
+    protocol: smtp
