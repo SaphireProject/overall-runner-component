@@ -3,22 +3,27 @@ package runner.models;
 import javax.persistence.*;
 
 @Entity
-@Table(name ="templates")
+@Table(name = "templates")
 public class Templates {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String template;
 
-    private String runPath;
+    private String runpath;
 
-    public int getId() {
+    public Templates(String template, String runpath) {
+        this.template = template;
+        this.runpath = runpath;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -31,10 +36,10 @@ public class Templates {
     }
 
     public String getRunPath() {
-        return runPath;
+        return runpath;
     }
 
-    public void setRunPath(String runPath) {
-        this.runPath = runPath;
+    public void setRunPath(String runpath) {
+        this.runpath = runpath;
     }
 }

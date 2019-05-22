@@ -2,9 +2,11 @@ package runner.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import runner.dao.RoomDAO;
 import runner.models.Room;
 
+@Service
 public class RoomService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomService.class);
@@ -13,23 +15,19 @@ public class RoomService {
     public RoomService() {
     }
 
-    public void saveRoom(Room Room) {
-        LOGGER.info("save");
-        roomDAO.save(Room);
+    public void saveRoom(Room room) {
+        roomDAO.save(room);
     }
 
-    public void deleteRoom(Room Room) {
-        LOGGER.info("delete");
-        roomDAO.delete(Room);
+    public void deleteRoom(Room room) {
+        roomDAO.delete(room);
     }
 
-    public void updateRoom(Room Room) {
-        LOGGER.info("upd");
-        roomDAO.update(Room);
+    public void updateRoom(Room room) {
+        roomDAO.update(room);
     }
 
     public void findRoom(int id) {
-        LOGGER.info("find");
         roomDAO.findRoomById(id);
     }
 

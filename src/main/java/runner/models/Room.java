@@ -4,22 +4,30 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name ="room")
+@Table(name = "room")
 public class Room {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private LocalDate create_data;
+    private LocalDate createdata;
 
-    private Integer win_user;
+    private Integer winuser;
 
-    private Integer owner_id;
+    private Integer idowner;
 
     private boolean started;
 
-    private Integer id_template;
+    private Integer idtemplate;
+
+    public Room(Integer idowner, boolean started, LocalDate localDate, Integer winuser, Integer idtemplate) {
+        this.idowner = idowner;
+        this.started = started;
+        this.createdata = localDate;
+        this.winuser = winuser;
+        this.idtemplate = idtemplate;
+    }
 
     public int getId() {
         return id;
@@ -29,28 +37,28 @@ public class Room {
         this.id = id;
     }
 
-    public LocalDate getCreate_data() {
-        return create_data;
+    public LocalDate getCreateData() {
+        return createdata;
     }
 
-    public void setCreate_data(LocalDate create_data) {
-        this.create_data = create_data;
+    public void setCreateData(LocalDate createdata) {
+        this.createdata = createdata;
     }
 
-    public Integer getWin_user() {
-        return win_user;
+    public Integer getWinUser() {
+        return winuser;
     }
 
-    public void setWin_user(Integer win_user) {
-        this.win_user = win_user;
+    public void setWinUser(Integer winuser) {
+        this.winuser = winuser;
     }
 
-    public Integer getOwner_id() {
-        return owner_id;
+    public Integer getIdOwner() {
+        return idowner;
     }
 
-    public void setOwner_id(Integer owner_id) {
-        this.owner_id = owner_id;
+    public void setIdOwner(Integer idowner) {
+        this.idowner = idowner;
     }
 
     public boolean isStarted() {
@@ -61,11 +69,11 @@ public class Room {
         this.started = started;
     }
 
-    public Integer getId_template() {
-        return id_template;
+    public Integer getIdTemplate() {
+        return idtemplate;
     }
 
-    public void setId_template(Integer id_template) {
-        this.id_template = id_template;
+    public void setId_template(Integer idtemplate) {
+        this.idtemplate = idtemplate;
     }
 }

@@ -8,35 +8,39 @@ public class Strategies {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
-    private Integer id_user;
+    @Column(name = "iduser")
+    private Integer idUser;
 
     private String path;
 
-    public Strategies(Integer id_user, String path) {
-        this.id_user = id_user;
+    private String name;
+
+    public Strategies(Integer idUser, String path, String name) {
+        this.idUser = idUser;
         this.path = path;
+        this.name = name;
     }
 
-    public Strategies(){
+    public Strategies() {
 
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Integer getId_user() {
-        return id_user;
+    public Integer getIdUser() {
+        return idUser;
     }
 
-    public void setId_user(Integer id_user) {
-        this.id_user = id_user;
+    public void setIdUser(Integer idUser) {
+        this.idUser = idUser;
     }
 
     public String getPath() {
@@ -45,5 +49,13 @@ public class Strategies {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

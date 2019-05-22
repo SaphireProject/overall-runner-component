@@ -2,49 +2,53 @@ package runner.dao;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import runner.models.Strategies;
+import runner.models.UsersRoom;
+import runner.models.UsersRoomId;
 import runner.utils.HibernateSessionFactoryUtil;
 
-import java.util.List;
+import javax.persistence.Query;
 
-public class StrategyDAO {
+public class UsersRoomDAO {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StrategyDAO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsersRoomDAO.class);
 
-    public void save(Strategies strategies) {
+    public void save(UsersRoom usersRoom) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.save(strategies);
+        session.save(usersRoom);
         tx1.commit();
         session.close();
     }
 
-    public void update(Strategies strategies) {
+    public void update(UsersRoom usersRoom) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.update(strategies);
+        session.update(usersRoom);
         tx1.commit();
         session.close();
     }
 
-    public void delete(Strategies strategies) {
+    public void delete(UsersRoom usersRoom) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.delete(strategies);
+        session.delete(usersRoom);
         tx1.commit();
         session.close();
     }
 
-    public Strategies findStrategyById(int id) {
-        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(Strategies.class, id);
+    public UsersRoom findUsersRoomById(UsersRoomId id) {
+        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(UsersRoom.class, id);
     }
 
-    public List findAll() {
+
+    public void findUserRoomByid(int id) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
-        Query query = session.createQuery("from Strategies as s");
-        return query.getResultList();
+        org.hibernate.query.Query query = session.createQuery("FROM users_room AS us WHERE us.id_user =:id");
+        query.setParameter("id", id);
+        LOGGER.info(query.getResultList().toString());
+        session.close();
     }
+
 }

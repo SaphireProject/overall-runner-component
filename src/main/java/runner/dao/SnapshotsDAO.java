@@ -4,39 +4,39 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import runner.models.StrategiesMap;
+import runner.models.Snapshots;
 import runner.utils.HibernateSessionFactoryUtil;
 
-public class StrategyMapDAO {
+public class SnapshotsDAO {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StrategyMapDAO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SnapshotsDAO.class);
 
-    public void save(StrategiesMap strategyMap) {
+    public void save(Snapshots snapshots) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.save(strategyMap);
+        session.save(snapshots);
         tx1.commit();
         session.close();
     }
 
-    public void update(StrategiesMap strategiesMap) {
+    public void update(Snapshots snapshots) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.update(strategiesMap);
+        session.update(snapshots);
         tx1.commit();
         session.close();
     }
 
-    public void delete(StrategiesMap strategiesMap) {
+    public void delete(Snapshots snapshots) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.delete(strategiesMap);
+        session.delete(snapshots);
         tx1.commit();
         session.close();
     }
 
-    public StrategiesMap findStrategiesMapById(int id) {
-        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(StrategiesMap.class, id);
+    public Snapshots findSnapshotsById(int id) {
+        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(Snapshots.class, id);
     }
 
 }

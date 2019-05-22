@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8085
   contextPath: "/"
 spring:
   datasource:
@@ -7,12 +7,7 @@ spring:
     username: postgres
     password: 1234
     generate-ddl: false
-  jpa:
-    show-sql: true
-    hibernate.ddl-auto: validate
-  mail:
-    host: smtp.yandex.ru
-    username: user.game.access
-    password: 390PEydq738
-    port: 465
-    protocol: smtp
+jwt:
+  expireDays: 3000
+  refreshDays: 3
+  secret: jhrstbojsetoibneaascac

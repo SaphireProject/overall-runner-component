@@ -2,9 +2,13 @@ package runner.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import runner.dao.StrategyDAO;
 import runner.models.Strategies;
 
+import java.util.List;
+
+@Service
 public class StrategyService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StrategyService.class);
@@ -14,22 +18,22 @@ public class StrategyService {
     }
 
     public void saveStrategy(Strategies strategy) {
-        LOGGER.info("save");
         strategyDAO.save(strategy);
     }
 
     public void deleteStrategy(Strategies strategy) {
-        LOGGER.info("delete");
         strategyDAO.delete(strategy);
     }
 
     public void updateStrategy(Strategies strategy) {
-        LOGGER.info("upd");
         strategyDAO.update(strategy);
     }
 
     public void findStrategy(int id) {
-        LOGGER.info("find");
         strategyDAO.findStrategyById(id);
+    }
+
+    public List findAll(){
+        return strategyDAO.findAll();
     }
 }

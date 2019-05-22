@@ -2,9 +2,11 @@ package runner.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import runner.dao.ParameterRoomDAO;
 import runner.models.ParametersRoom;
 
+@Service
 public class ParameterService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ParameterService.class);

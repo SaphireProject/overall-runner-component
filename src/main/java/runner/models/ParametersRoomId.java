@@ -1,29 +1,33 @@
 package runner.models;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 @Embeddable
 public class ParametersRoomId implements Serializable {
 
-    private int id_room;
+    @Column(name = "idroom")
+    private int idroom;
+
+    @Column(name = "name")
     private String name;
 
     public ParametersRoomId() {
 
     }
 
-    public ParametersRoomId(int id_room, String name) {
-        this.id_room = id_room;
+    public ParametersRoomId(int idroom, String name) {
+        this.idroom = idroom;
         this.name = name;
     }
 
-    public int getId_room() {
-        return id_room;
+    public int getIdRoom() {
+        return idroom;
     }
 
-    public void setId_room(int id_room) {
-        this.id_room = id_room;
+    public void setIdRoom(int idroom) {
+        this.idroom = idroom;
     }
 
     public String getName() {
@@ -40,7 +44,7 @@ public class ParametersRoomId implements Serializable {
         int result = 1;
         result = prime * result
                 + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + id_room;
+        result = prime * result + idroom;
         return result;
     }
 
@@ -58,7 +62,7 @@ public class ParametersRoomId implements Serializable {
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (id_room != other.id_room)
+        if (idroom != other.idroom)
             return false;
         return true;
     }
