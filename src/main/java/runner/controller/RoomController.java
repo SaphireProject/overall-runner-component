@@ -14,6 +14,7 @@ import runner.models.ParametersRoom;
 import runner.models.Room;
 import runner.models.UsersRoom;
 import runner.models.UsersRoomId;
+import runner.repository.ParametersRoomRepository;
 import runner.repository.RoomRepository;
 import runner.repository.UsersRoomRepository;
 import runner.services.ParameterService;
@@ -35,6 +36,9 @@ public class RoomController {
     @Autowired
     UsersRoomRepository usersRoomRepository;
 
+    @Autowired
+    ParametersRoomRepository parametersRoomRepository;
+
     @RequestMapping(value = "/room", method = RequestMethod.POST)
     public Map<String, String> roomCreate(@RequestBody String response) {
         JSONObject jsonObject = new JSONObject(response);
@@ -49,7 +53,7 @@ public class RoomController {
         LocalDate localDate = LocalDate.now();
         RoomService roomService = new RoomService();
         Room room = new Room(idOfAdmin, false, localDate, 0, 1);
-        roomService.saveRoom(room);
+        roomRepository.save(room);
 
         Map<String, String> map = new HashMap<>();
         map.put("countOfPlayers", String.valueOf(countOfPlayers));
@@ -58,7 +62,7 @@ public class RoomController {
 
         ParameterService parameterService = new ParameterService();
         ParametersRoom parametersRoom = new ParametersRoom(nameOfRoom, room.getId(), map.toString());
-        parameterService.saveParametersRoom(parametersRoom);
+        parametersRoomRepository.save(parametersRoom);
 
         Map<String, String> responseData = new HashMap<>();
         responseData.put("idOfRoom", String.valueOf(room.getId()));
@@ -110,8 +114,10 @@ public class RoomController {
             responseArray.put(responseData);
         }
 
+        int idOfAdmin = roomRepository.findById(idOfRoom).getIdOwner();
         Map<String, String> response = new HashMap<>();
         response.put("users", responseArray.toString());
+        response.put("idOfAdmin", String.valueOf(idOfAdmin));
         return response;
     }
 
