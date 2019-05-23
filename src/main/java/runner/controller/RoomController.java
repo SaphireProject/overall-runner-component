@@ -1,5 +1,6 @@
 package runner.controller;
 
+import org.apache.catalina.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -12,9 +13,12 @@ import runner.config.JwtGenerator;
 import runner.models.ParametersRoom;
 import runner.models.Room;
 import runner.models.UsersRoom;
+import runner.models.UsersRoomId;
+import runner.repository.RoomRepository;
 import runner.repository.UsersRoomRepository;
 import runner.services.ParameterService;
 import runner.services.RoomService;
+import runner.services.UsersRoomService;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -30,7 +34,6 @@ public class RoomController {
 
     @Autowired
     UsersRoomRepository usersRoomRepository;
-
 
     @RequestMapping(value = "/room", method = RequestMethod.POST)
     public Map<String, String> roomCreate(@RequestBody String response) {
@@ -49,7 +52,7 @@ public class RoomController {
         roomService.saveRoom(room);
 
         Map<String, String> map = new HashMap<>();
-        map.put("idOfAdmin", String.valueOf(idOfAdmin));
+        map.put("countOfPlayers", String.valueOf(countOfPlayers));
         map.put("heightOfMapForGame", String.valueOf(heightOfMapForGame));
         map.put("widthOfMapForGame", String.valueOf(widthOfMapForGame));
 
@@ -112,50 +115,119 @@ public class RoomController {
         return response;
     }
 
-/*13. Удалить админом игрока из лобби
+    @RequestMapping(value = "/game/users", method = RequestMethod.GET)
+    public Map<String, String> gameUsers(@RequestParam("idOfRoom") int idOfRoom) {
 
-DELETE /invite-user
-Тело запроса
-{
-  idOfUser: number;
-}
+        List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
 
-Тело ответа
-{
-  status: boolean;
-  idOfDeletedUser: number;
-}
-*/
+        JSONArray responseArray = new JSONArray();
+        for (UsersRoom us : usersRoomList) {
+            JSONObject jsonObject = new JSONObject();
 
-    //TODO удаление
-    @RequestMapping(value = "/invite-user", method = RequestMethod.DELETE)
-    public Map<String, String> inviteUser(@RequestHeader("Authorization") String requestHeader, @RequestBody String requestBody) {
-        Long idAdmin = jwtGenerator.decodeNew(requestHeader).getUserData().getId();
-        LOGGER.info(String.valueOf(idAdmin));
+            int idOfUser = us.getId().getIdUser();
+            String choosenTank = us.getChosenTank();
+            int readyToPlay = us.getStatus();
 
-        JSONObject json = new JSONObject(requestBody);
-        Long idUser = json.getLong("idOfUser");
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
 
+            HttpEntity<String> entity = new HttpEntity<>("", headers);
+
+            //TODO к Мише переделать запрос под GET
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> responseUser = restTemplate.exchange(
+                    URL_USER_ID + idOfUser,
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
+
+            JSONObject json = new JSONObject(responseUser.getBody());
+            String username = json.getString("username");
+            String email = json.getString("email");
+
+            jsonObject.put("idOfUser", idOfUser);
+            jsonObject.put("username", username);
+            jsonObject.put("email", email);
+            jsonObject.put("choosenTank", choosenTank);
+            jsonObject.put("readyToPlay", readyToPlay);
+            jsonObject.put("idOfRoom", idOfRoom);
+
+            responseArray.put(jsonObject);
+        }
 
         Map<String, String> responseData = new HashMap<>();
+        responseData.put("users", responseArray.toString());
         return responseData;
     }
 
+    @Autowired
+    RoomRepository roomRepository;
 
-    // 14 GET
-    //
-    //Тело ответа
-    //{
-    //  status: boolean;
-    //}
+    @RequestMapping(value = "/game/is-started", method = RequestMethod.GET)
+    public Map<String, String> gameIsStarted(@RequestParam("idOfRoom") int idOfRoom) {
 
-    //TODO удаление
-    @RequestMapping(value = "/game/exit", method = RequestMethod.GET)
-    public Map<String, String> gameExit(@RequestHeader("Authorization") String request) {
+        Map<String, String> responseData = null;
+        try {
+            Room room = roomRepository.findById(idOfRoom);
 
-        Long id = jwtGenerator.decodeNew(request).getUserData().getId();
+            boolean status = room.isStarted();
+
+            responseData = new HashMap<>();
+            responseData.put("status", String.valueOf(status));
+            responseData.put("idOfRoom", String.valueOf(idOfRoom));
+        } catch (Exception e) {
+        }
+
+        return responseData;
+    }
+
+    static final String URL_USER_INFO = "http://localhost:8084/user/info";
+
+    @Autowired
+    UsersRoomService usersRoomService;
+
+    @RequestMapping(value = "/invite-user", method = RequestMethod.DELETE)
+    public Map<String, String> deleteInviteUser(@RequestParam("idOfInvite") String idOfInvite) {
+
+        int index = idOfInvite.indexOf("-");
+        int idRoom = Integer.parseInt(idOfInvite.substring(0, index));
+        int idUser = Integer.parseInt(idOfInvite.substring(index + 1));
+
+        UsersRoom us = new UsersRoom(idRoom, idUser);
+        usersRoomService.deleteUsersRoom(us);
 
         Map<String, String> responseData = new HashMap<>();
+        responseData.put("status", "true");
+        return responseData;
+    }
+
+    @RequestMapping(value = "/invite-admin", method = RequestMethod.DELETE)
+    public Map<String, String> deleteInviteAdmin(@RequestParam("idOfUser") int idOfUser, @RequestParam("idOfRoom") int idOfRoom) {
+
+        UsersRoom us = new UsersRoom(idOfRoom, idOfUser);
+        usersRoomService.deleteUsersRoom(us);
+
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("status", "true");
+        responseData.put("idOfDeletedUser", String.valueOf(idOfUser));
+        responseData.put("idOfRoom", String.valueOf(idOfRoom));
+        return responseData;
+    }
+
+    //TODO удаление
+    @RequestMapping(value = "/game/exit", method = RequestMethod.POST)
+    public Map<String, String> gameExit(@RequestBody String request) {
+        JSONObject jsonObject = new JSONObject(request);
+        int idOfUser = jsonObject.getInt("idOfUser");
+        int idOfRoom = jsonObject.getInt("idOfRoom");
+        String username = jsonObject.getString("username");
+
+        UsersRoom us = new UsersRoom(idOfRoom, idOfUser);
+        usersRoomService.deleteUsersRoom(us);
+
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("status", "true");
+        responseData.put("idOfRoom", String.valueOf(idOfRoom));
         return responseData;
     }
 }

@@ -37,6 +37,10 @@ public class UsersRoomId implements Serializable {
         this.idUser = idUser;
     }
 
+    public String getId() {
+        return idRoom + "_" + idUser;
+    }
+
     @Override
     public int hashCode() {
         final Integer prime = 31;

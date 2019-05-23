@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class ParametersRoomId implements Serializable {
 
     @Column(name = "idroom")
-    private int idroom;
+    private int idRoom;
 
     @Column(name = "name")
     private String name;
@@ -17,17 +17,17 @@ public class ParametersRoomId implements Serializable {
 
     }
 
-    public ParametersRoomId(int idroom, String name) {
-        this.idroom = idroom;
+    public ParametersRoomId(int idRoom, String name) {
+        this.idRoom = idRoom;
         this.name = name;
     }
 
     public int getIdRoom() {
-        return idroom;
+        return idRoom;
     }
 
-    public void setIdRoom(int idroom) {
-        this.idroom = idroom;
+    public void setIdRoom(int idRoom) {
+        this.idRoom = idRoom;
     }
 
     public String getName() {
@@ -38,13 +38,17 @@ public class ParametersRoomId implements Serializable {
         this.name = name;
     }
 
+    public String getId() {
+        return idRoom + "_" + name;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result
                 + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + idroom;
+        result = prime * result + idRoom;
         return result;
     }
 
@@ -62,7 +66,7 @@ public class ParametersRoomId implements Serializable {
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (idroom != other.idroom)
+        if (idRoom != other.idRoom)
             return false;
         return true;
     }

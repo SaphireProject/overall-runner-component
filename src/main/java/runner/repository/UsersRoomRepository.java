@@ -11,9 +11,11 @@ import java.util.List;
 public interface UsersRoomRepository extends CrudRepository<UsersRoom, Integer> {
     List<UsersRoom> findAll();
 
-    UsersRoom findByIdIdUser(int id);
+    List<UsersRoom> findByIdIdUser(int id);
 
     List<UsersRoom> getByIdIdRoom(int id);
+
+    UsersRoom removeByIdIdRoomAndIdIdUser(int idRoom, int idUser);
 
     UsersRoom findById(UsersRoomId id);
 

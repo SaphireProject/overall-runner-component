@@ -13,18 +13,29 @@ public class Strategies {
     @Column(name = "iduser")
     private Integer idUser;
 
-    private String path;
+    private String description;
 
     private String name;
 
-    public Strategies(Integer idUser, String path, String name) {
+    @Column(name = "typegame")
+    private String typeGame;
+
+    public Strategies(Integer idUser, String description, String name) {
         this.idUser = idUser;
-        this.path = path;
+        this.description = description;
         this.name = name;
     }
 
     public Strategies() {
 
+    }
+
+    public String getTypeGame() {
+        return typeGame;
+    }
+
+    public void setTypeGame(String typeGame) {
+        this.typeGame = typeGame;
     }
 
     public Integer getId() {
@@ -43,12 +54,12 @@ public class Strategies {
         this.idUser = idUser;
     }
 
-    public String getPath() {
-        return path;
+    public String getDescription() {
+        return description;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getName() {

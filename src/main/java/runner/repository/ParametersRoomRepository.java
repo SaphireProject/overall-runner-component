@@ -8,4 +8,6 @@ import runner.models.ParametersRoomId;
 @Repository
 public interface ParametersRoomRepository extends CrudRepository<ParametersRoom, Integer> {
     ParametersRoom getById(ParametersRoomId id);
+
+    ParametersRoom getByIdIdRoom(int id);
 }

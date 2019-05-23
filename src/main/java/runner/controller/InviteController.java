@@ -1,5 +1,6 @@
 package runner.controller;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,15 +9,15 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import runner.config.JwtGenerator;
-import runner.models.ParametersRoom;
-import runner.models.ParametersRoomId;
-import runner.models.UsersRoom;
-import runner.models.UsersRoomId;
+import runner.dao.ParameterRoomDAO;
+import runner.models.*;
 import runner.repository.ParametersRoomRepository;
+import runner.repository.RoomRepository;
 import runner.repository.UsersRoomRepository;
 import runner.services.UsersRoomService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -34,7 +35,7 @@ public class InviteController {
     private static final Logger LOGGER = LoggerFactory.getLogger(InviteController.class);
     static final String URL_USER_INFO = "http://localhost:8084/user/info";
 
-    @RequestMapping(value = "/invite-user", method = RequestMethod.PUT)
+    @RequestMapping(value = "/invite-user", method = RequestMethod.POST)
     public Map<String, String> inviteUser(@RequestHeader("Authorization") String requestHeader, @RequestBody String requestBody) {
         JSONObject jsonObject = new JSONObject(requestBody);
         String name = jsonObject.getString("username");
@@ -73,14 +74,70 @@ public class InviteController {
         return responseData;
     }
 
+    @Autowired
+    RoomRepository roomRepository;
+
+    static final String URL_USER_ID = "http://localhost:8084/user/";
+
     @RequestMapping(value = "/notification", method = RequestMethod.GET)
     public Map<String, String> notification(@RequestHeader("Authorization") String request) {
 
-        Long id = jwtGenerator.decodeNew(request).getUserData().getId();
+        int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
 
-        //usersRoomRepository.findByIdUser(id);
+        List<UsersRoom> usersRoomList = usersRoomRepository.findByIdIdUser(id);
+
+        JSONArray responseArray = new JSONArray();
+        for (UsersRoom us : usersRoomList) {
+
+            JSONObject responceJson = new JSONObject();
+
+            String idOfInvite = us.getId().getId();
+
+            int idOfRoom = us.getId().getIdRoom();
+
+            ParametersRoom parametersRoom = parametersRoomRepository.getByIdIdRoom(idOfRoom);
+
+            int idOfAdmin = roomRepository.findById(idOfRoom).getIdOwner();
+
+            String nameOfRoom = parametersRoom.getId().getName();
+
+            JSONObject param = new JSONObject(parametersRoom.getValue());
+            String countOfPlayers = param.getString("countOfPlayers");
+            String heightOfMapForGame = param.getString("heightOfMapForGame");
+            String widthOfMapForGame = param.getString("widthOfMapForGame");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
+
+            HttpEntity<String> entity = new HttpEntity<>("", headers);
+
+            //TODO к Мише переделать запрос под GET
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> responseUser = restTemplate.exchange(
+                    URL_USER_ID + idOfAdmin,
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
+
+            JSONObject json = new JSONObject(responseUser.getBody());
+            String usernameOfAdmin = json.getString("username");
+            String emailOfAdmin = json.getString("email");
+
+            responceJson.put("idOfInvite", idOfInvite);
+            responceJson.put("idOfRoom", idOfRoom);
+            responceJson.put("nameOfRoom", nameOfRoom);
+            responceJson.put("idOfAdmin", idOfAdmin);
+            responceJson.put("usernameOfAdmin", usernameOfAdmin);
+            responceJson.put("emailOfAdmin", emailOfAdmin);
+            responceJson.put("countOfPlayers", countOfPlayers);
+            responceJson.put("heightOfMapForGame", heightOfMapForGame);
+            responceJson.put("widthOfMapForGame", widthOfMapForGame);
+
+            responseArray.put(responceJson);
+        }
 
         Map<String, String> responseData = new HashMap<>();
+        responseData.put("invite", responseArray.toString());
         return responseData;
     }
 
@@ -89,18 +146,18 @@ public class InviteController {
     public Map<String, String> deleteInvite(@RequestBody String request) {
         JSONObject jsonObject = new JSONObject(request);
         String username = jsonObject.getString("username");
-        Long idOfInvite = jsonObject.getLong("idOfInvite");
+        String idOfInvite = jsonObject.getString("idOfInvite");
 
         Map<String, String> responseData = new HashMap<>();
         responseData.put("status", "true");
         return responseData;
     }
 
-    @RequestMapping(value = "/invite/accept", method = RequestMethod.PUT)
+    @RequestMapping(value = "/invite/accept", method = RequestMethod.POST)
     public Map<String, String> inviteAccept(@RequestBody String request) {
         JSONObject jsonObject = new JSONObject(request);
         String username = jsonObject.getString("username");
-        Integer idOfInvite = jsonObject.getInt("idOfInvite");
+        String idOfInvite = jsonObject.getString("idOfInvite");
 
         Integer idL = 3;
 
@@ -123,7 +180,7 @@ public class InviteController {
         String widthOfMapForGame = jsonParam.getString("widthOfMapForGame");
 
         Map<String, String> responseData = new HashMap<>();
-        responseData.put("idOfInvite", String.valueOf(id.hashCode()));
+        responseData.put("idOfInvite", id.getId());
         responseData.put("idOfRoom", String.valueOf(id.getIdRoom()));
         responseData.put("nameOfRoom", nameOfRoom);
         responseData.put("idOfAdmin", idOfAdmin);
@@ -134,4 +191,59 @@ public class InviteController {
         return responseData;
     }
 
+    @Autowired
+    UsersRoomService usersRoomService;
+
+    @RequestMapping(value = "/accept-invite", method = RequestMethod.POST)
+    public Map<String, String> acceptInvite(@RequestBody String request) {
+        JSONObject requestJson = new JSONObject(request);
+        String username = requestJson.getString("username");
+        String idOfInvite = requestJson.getString("idOfInvite");
+
+        int index = idOfInvite.indexOf("-");
+        int idRoom = Integer.parseInt(idOfInvite.substring(0, index));
+        int idUser = Integer.parseInt(idOfInvite.substring(index + 1));
+
+        ParametersRoom pr = parametersRoomRepository.getByIdIdRoom(idRoom);
+        String nameOfRoom = pr.getId().getName();
+
+        JSONObject jsonObject = new JSONObject(pr.getValue());
+        int countOfPlayers = jsonObject.getInt("countOfPlayers");
+        int heightOfMapForGame = jsonObject.getInt("heightOfMapForGame");
+        int widthOfMapForGame = jsonObject.getInt("widthOfMapForGame");
+
+        Room room = roomRepository.findById(idRoom);
+        int idOfAdmin = room.getIdOwner();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
+
+        HttpEntity<String> entity = new HttpEntity<>("", headers);
+
+        //TODO к Мише переделать запрос под GET
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseUser = restTemplate.exchange(
+                URL_USER_ID + idOfAdmin,
+                HttpMethod.GET,
+                entity,
+                String.class);
+        JSONObject json = new JSONObject(responseUser.getBody());
+        String usernameOfAdmin = json.getString("username");
+
+        UsersRoom us = new UsersRoom(idRoom, idUser);
+        us.setCheckInvite(true);
+        us.setStatus(1);
+        usersRoomService.updateUsersRoom(us);
+
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("idOfInvite", idOfInvite);
+        responseData.put("idOfRoom", String.valueOf(idRoom));
+        responseData.put("nameOfRoom", nameOfRoom);
+        responseData.put("idOfAdmin", String.valueOf(idOfAdmin));
+        responseData.put("usernameOfAdmin", usernameOfAdmin);
+        responseData.put("countOfPlayers", String.valueOf(countOfPlayers));
+        responseData.put("heightOfMapForGame", String.valueOf(heightOfMapForGame));
+        responseData.put("widthOfMapForGame", String.valueOf(widthOfMapForGame));
+        return responseData;
+    }
 }

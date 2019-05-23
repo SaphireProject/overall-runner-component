@@ -29,6 +29,9 @@ public class Room {
         this.idtemplate = idtemplate;
     }
 
+    public Room() {
+    }
+
     public int getId() {
         return id;
     }
