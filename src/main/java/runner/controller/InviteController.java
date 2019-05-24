@@ -84,6 +84,8 @@ public class InviteController {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
 
+        LOGGER.info(String.valueOf(id));
+
         List<UsersRoom> usersRoomList = usersRoomRepository.findByIdIdUser(id);
 
         JSONArray responseArray = new JSONArray();
@@ -102,6 +104,7 @@ public class InviteController {
             String nameOfRoom = parametersRoom.getId().getName();
 
             JSONObject param = new JSONObject(parametersRoom.getValue());
+
             String countOfPlayers = param.getString("countOfPlayers");
             String heightOfMapForGame = param.getString("heightOfMapForGame");
             String widthOfMapForGame = param.getString("widthOfMapForGame");

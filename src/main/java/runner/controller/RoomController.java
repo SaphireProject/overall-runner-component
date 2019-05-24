@@ -55,12 +55,11 @@ public class RoomController {
         Room room = new Room(idOfAdmin, false, localDate, 0, 1);
         roomRepository.save(room);
 
-        Map<String, String> map = new HashMap<>();
+        JSONObject map = new JSONObject();
         map.put("countOfPlayers", String.valueOf(countOfPlayers));
         map.put("heightOfMapForGame", String.valueOf(heightOfMapForGame));
         map.put("widthOfMapForGame", String.valueOf(widthOfMapForGame));
 
-        ParameterService parameterService = new ParameterService();
         ParametersRoom parametersRoom = new ParametersRoom(nameOfRoom, room.getId(), map.toString());
         parametersRoomRepository.save(parametersRoom);
 
