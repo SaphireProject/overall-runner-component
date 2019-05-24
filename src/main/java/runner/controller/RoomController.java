@@ -78,6 +78,8 @@ public class RoomController {
 
         List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
 
+        int idOfAdmin = roomRepository.findById(idOfRoom).getIdOwner();
+
         List<UserJson> usersJsonList = new ArrayList<>();
 
         for (UsersRoom us : usersRoomList) {
@@ -102,7 +104,7 @@ public class RoomController {
             usersJsonList.add(userJson);
         }
 
-        GameStatusJson gameStatusJson = new GameStatusJson(usersJsonList);
+        GameStatusJson gameStatusJson = new GameStatusJson(usersJsonList,idOfAdmin);
         return gameStatusJson;
     }
 

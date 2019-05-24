@@ -6,15 +6,26 @@ public class GameStatusJson {
 
     private List<UserJson> users;
 
-    public GameStatusJson(List<UserJson> users) {
+    private int idOfAdmin;
+
+    public GameStatusJson(List<UserJson> users, int idOfAdmin) {
         this.users = users;
+        this.idOfAdmin = idOfAdmin;
     }
 
-    public List<UserJson> getListUser() {
+    public List<UserJson> getUsers() {
         return users;
     }
 
-    public void setListUser(List<UserJson> users) {
+    public void setUsers(List<UserJson> users) {
         this.users = users;
+    }
+
+    public int getIdOfAdmin() {
+        return idOfAdmin;
+    }
+
+    public void setIdOfAdmin(int idOfAdmin) {
+        this.idOfAdmin = idOfAdmin;
     }
 }
