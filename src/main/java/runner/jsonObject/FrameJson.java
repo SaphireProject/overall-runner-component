@@ -1,17 +1,15 @@
 package runner.jsonObject;
 
 public class FrameJson {
-    private static int idSnapshot=1;
     private int snapshotNumber;
     private AnimationJson animations;
 
     public FrameJson() {
     }
 
-    public FrameJson(AnimationJson animations) {
-        this.snapshotNumber = idSnapshot;
+    public FrameJson(AnimationJson animations, int snapshotNumber) {
+        this.snapshotNumber = snapshotNumber;
         this.animations = animations;
-        idSnapshot++;
     }
 
     public int getSnapshotNumber() {

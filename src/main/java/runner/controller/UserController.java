@@ -46,7 +46,7 @@ public class UserController {
 
         List<Strategies> strategiesList = strategiesRepository.getByIdUserAndTypeGame(id, game);
         for (Strategies strategies : strategiesList) {
-            StrategyJson strategyJson = new StrategyJson(strategies.getId(), strategies.getName());
+            StrategyJson strategyJson = new StrategyJson(strategies.getId(), strategies.getName(), "");
             list.add(strategyJson);
         }
 
@@ -55,20 +55,16 @@ public class UserController {
     }
 
     @RequestMapping(value = "/user/strategy", method = RequestMethod.GET)
-    public Map<String, String> strategy(@RequestParam("idOfChosenStrategy") int idOfChosenStrategy) {
-
-
-        Map<String, String> response = null;
+    public StrategyJson strategy(@RequestParam("idOfChosenStrategy") int idOfChosenStrategy) {
+        StrategyJson strategyJson = null;
         try {
             Strategies strategies = strategiesRepository.getById(idOfChosenStrategy);
-
-            response = new HashMap<>();
-            response.put("id", String.valueOf(strategies.getId()));
-            response.put("name", strategies.getName());
-            response.put("description", strategies.getDescription());
+            strategyJson = new StrategyJson(strategies.getId(), strategies.getName(), strategies.getDescription());
         } catch (Exception e) {
+            e.printStackTrace();
         }
-        return response;
+
+        return strategyJson;
     }
 
     static final String URL_USER_INFO = "http://localhost:8084/user/info";

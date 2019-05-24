@@ -11,6 +11,9 @@ public class SetMetida {
         this.type = type;
     }
 
+    public SetMetida() {
+    }
+
     public int getId() {
         return id;
     }

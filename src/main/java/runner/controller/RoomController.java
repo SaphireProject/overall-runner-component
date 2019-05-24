@@ -10,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import runner.config.JwtGenerator;
+import runner.data.ParameterMetida;
 import runner.jsonObjectUI.*;
 import runner.models.ParametersRoom;
 import runner.models.Room;
@@ -56,6 +57,7 @@ public class RoomController {
         Room room = new Room(idOfAdmin, false, localDate, 0, 1);
         roomRepository.save(room);
 
+        ParameterMetida parameterMetida = new ParameterMetida(countOfPlayers, heightOfMapForGame, widthOfMapForGame, null);
         JSONObject map = new JSONObject();
         map.put("countOfPlayers", String.valueOf(countOfPlayers));
         map.put("heightOfMapForGame", String.valueOf(heightOfMapForGame));
@@ -104,7 +106,7 @@ public class RoomController {
             usersJsonList.add(userJson);
         }
 
-        GameStatusJson gameStatusJson = new GameStatusJson(usersJsonList,idOfAdmin);
+        GameStatusJson gameStatusJson = new GameStatusJson(usersJsonList, idOfAdmin);
         return gameStatusJson;
     }
 
@@ -170,7 +172,7 @@ public class RoomController {
     @RequestMapping(value = "/invite-user", method = RequestMethod.DELETE)
     public InviteUserDeleteJson deleteInviteUser(@RequestParam("idOfInvite") String idOfInvite) {
 
-        int index = idOfInvite.indexOf("-");
+        int index = idOfInvite.indexOf("_");
         int idRoom = Integer.parseInt(idOfInvite.substring(0, index));
         int idUser = Integer.parseInt(idOfInvite.substring(index + 1));
 

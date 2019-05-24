@@ -133,6 +133,8 @@ public class InviteController {
 
             list.add(inviteJson);
 
+            us.setCheckInvite(true);
+            usersRoomService.updateUsersRoom(us);
         }
 
         InvitesJson invitesJson = new InvitesJson(list);
@@ -198,7 +200,8 @@ public class InviteController {
         String username = requestJson.getString("username");
         String idOfInvite = requestJson.getString("idOfInvite");
 
-        int index = idOfInvite.indexOf("-");
+        LOGGER.info(idOfInvite);
+        int index = idOfInvite.indexOf("_");
         int idRoom = Integer.parseInt(idOfInvite.substring(0, index));
         int idUser = Integer.parseInt(idOfInvite.substring(index + 1));
 
