@@ -10,12 +10,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import runner.config.JwtGenerator;
 import runner.dao.ParameterRoomDAO;
+import runner.data.InviteUsers;
+import runner.jsonObjectUI.InviteJson;
+import runner.jsonObjectUI.InviteUserJson;
+import runner.jsonObjectUI.InvitesJson;
 import runner.models.*;
 import runner.repository.ParametersRoomRepository;
 import runner.repository.RoomRepository;
 import runner.repository.UsersRoomRepository;
 import runner.services.UsersRoomService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +41,7 @@ public class InviteController {
     static final String URL_USER_INFO = "http://localhost:8084/user/info";
 
     @RequestMapping(value = "/invite-user", method = RequestMethod.POST)
-    public Map<String, String> inviteUser(@RequestHeader("Authorization") String requestHeader, @RequestBody String requestBody) {
+    public InviteUserJson inviteUser(@RequestHeader("Authorization") String requestHeader, @RequestBody String requestBody) {
         JSONObject jsonObject = new JSONObject(requestBody);
         String name = jsonObject.getString("username");
         Integer idOfRoom = jsonObject.getInt("idOfRoom");
@@ -66,12 +71,9 @@ public class InviteController {
         UsersRoom usersRoom = new UsersRoom(idOfRoom, id);
         usersRoomService.saveUsersRoom(usersRoom);
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("id", String.valueOf(id));
-        responseData.put("email", email);
-        responseData.put("username", name);
-        responseData.put("idOfRoom", String.valueOf(idOfRoom));
-        return responseData;
+        InviteUserJson inviteUserJson = new InviteUserJson(id, email, name, idOfRoom);
+
+        return inviteUserJson;
     }
 
     @Autowired
@@ -80,7 +82,7 @@ public class InviteController {
     static final String URL_USER_ID = "http://localhost:8084/user/";
 
     @RequestMapping(value = "/notification", method = RequestMethod.GET)
-    public Map<String, String> notification(@RequestHeader("Authorization") String request) {
+    public InvitesJson notification(@RequestHeader("Authorization") String request) {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
 
@@ -88,10 +90,10 @@ public class InviteController {
 
         List<UsersRoom> usersRoomList = usersRoomRepository.findByIdIdUser(id);
 
+        List<InviteJson> list = new ArrayList<>();
+
         JSONArray responseArray = new JSONArray();
         for (UsersRoom us : usersRoomList) {
-
-            JSONObject responceJson = new JSONObject();
 
             String idOfInvite = us.getId().getId();
 
@@ -105,9 +107,9 @@ public class InviteController {
 
             JSONObject param = new JSONObject(parametersRoom.getValue());
 
-            String countOfPlayers = param.getString("countOfPlayers");
-            String heightOfMapForGame = param.getString("heightOfMapForGame");
-            String widthOfMapForGame = param.getString("widthOfMapForGame");
+            int countOfPlayers = param.getInt("countOfPlayers");
+            int heightOfMapForGame = param.getInt("heightOfMapForGame");
+            int widthOfMapForGame = param.getInt("widthOfMapForGame");
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
@@ -126,22 +128,15 @@ public class InviteController {
             String usernameOfAdmin = json.getString("username");
             String emailOfAdmin = json.getString("email");
 
-            responceJson.put("idOfInvite", idOfInvite);
-            responceJson.put("idOfRoom", idOfRoom);
-            responceJson.put("nameOfRoom", nameOfRoom);
-            responceJson.put("idOfAdmin", idOfAdmin);
-            responceJson.put("usernameOfAdmin", usernameOfAdmin);
-            responceJson.put("emailOfAdmin", emailOfAdmin);
-            responceJson.put("countOfPlayers", countOfPlayers);
-            responceJson.put("heightOfMapForGame", heightOfMapForGame);
-            responceJson.put("widthOfMapForGame", widthOfMapForGame);
+            InviteJson inviteJson = new InviteJson(idOfInvite, idOfRoom, nameOfRoom, idOfAdmin, usernameOfAdmin,
+                    emailOfAdmin, countOfPlayers, heightOfMapForGame, widthOfMapForGame);
 
-            responseArray.put(responceJson);
+            list.add(inviteJson);
+
         }
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("invite", responseArray.toString());
-        return responseData;
+        InvitesJson invitesJson = new InvitesJson(list);
+        return invitesJson;
     }
 
     //TODO do it
@@ -198,7 +193,7 @@ public class InviteController {
     UsersRoomService usersRoomService;
 
     @RequestMapping(value = "/accept-invite", method = RequestMethod.POST)
-    public Map<String, String> acceptInvite(@RequestBody String request) {
+    public InviteJson acceptInvite(@RequestBody String request) {
         JSONObject requestJson = new JSONObject(request);
         String username = requestJson.getString("username");
         String idOfInvite = requestJson.getString("idOfInvite");
@@ -238,15 +233,8 @@ public class InviteController {
         us.setStatus(1);
         usersRoomService.updateUsersRoom(us);
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("idOfInvite", idOfInvite);
-        responseData.put("idOfRoom", String.valueOf(idRoom));
-        responseData.put("nameOfRoom", nameOfRoom);
-        responseData.put("idOfAdmin", String.valueOf(idOfAdmin));
-        responseData.put("usernameOfAdmin", usernameOfAdmin);
-        responseData.put("countOfPlayers", String.valueOf(countOfPlayers));
-        responseData.put("heightOfMapForGame", String.valueOf(heightOfMapForGame));
-        responseData.put("widthOfMapForGame", String.valueOf(widthOfMapForGame));
-        return responseData;
+        InviteJson inviteJson = new InviteJson(idOfInvite, idRoom, nameOfRoom, idOfAdmin, usernameOfAdmin, "", countOfPlayers,
+                heightOfMapForGame, widthOfMapForGame);
+        return inviteJson;
     }
 }

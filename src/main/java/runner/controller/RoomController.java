@@ -10,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import runner.config.JwtGenerator;
+import runner.jsonObjectUI.*;
 import runner.models.ParametersRoom;
 import runner.models.Room;
 import runner.models.UsersRoom;
@@ -22,6 +23,7 @@ import runner.services.RoomService;
 import runner.services.UsersRoomService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class RoomController {
     ParametersRoomRepository parametersRoomRepository;
 
     @RequestMapping(value = "/room", method = RequestMethod.POST)
-    public Map<String, String> roomCreate(@RequestBody String response) {
+    public RoomJson roomCreate(@RequestBody String response) {
         JSONObject jsonObject = new JSONObject(response);
         LOGGER.info(jsonObject.toString());
         Integer idOfAdmin = jsonObject.getInt("idOfAdmin");
@@ -51,7 +53,6 @@ public class RoomController {
         Integer widthOfMapForGame = jsonObject.getInt("widthOfMapForGame");
 
         LocalDate localDate = LocalDate.now();
-        RoomService roomService = new RoomService();
         Room room = new Room(idOfAdmin, false, localDate, 0, 1);
         roomRepository.save(room);
 
@@ -63,30 +64,23 @@ public class RoomController {
         ParametersRoom parametersRoom = new ParametersRoom(nameOfRoom, room.getId(), map.toString());
         parametersRoomRepository.save(parametersRoom);
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("idOfRoom", String.valueOf(room.getId()));
-        responseData.put("nameOfRoom", nameOfRoom);
-        responseData.put("idOfAdmin", String.valueOf(idOfAdmin));
-        responseData.put("usernameOfAdmin", usernameOfAdmin);
-        responseData.put("countOfPlayers", String.valueOf(countOfPlayers));
-        responseData.put("heightOfMapForGame", String.valueOf(heightOfMapForGame));
-        responseData.put("widthOfMapForGame", String.valueOf(widthOfMapForGame));
-        return responseData;
+        RoomJson responceRoomJson = new RoomJson(room.getId(), nameOfRoom,
+                idOfAdmin, usernameOfAdmin,
+                countOfPlayers, heightOfMapForGame,
+                widthOfMapForGame);
+        return responceRoomJson;
     }
 
     static final String URL_USER_ID = "http://localhost:8084/user/";
 
     @RequestMapping(value = "/game-status", method = RequestMethod.GET)
-    public Map<String, String> gameStatus(@RequestParam("idOfRoom") int idOfRoom) {
+    public GameStatusJson gameStatus(@RequestParam("idOfRoom") int idOfRoom) {
 
         List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
 
-        JSONArray responseArray = new JSONArray();
+        List<UserJson> usersJsonList = new ArrayList<>();
 
         for (UsersRoom us : usersRoomList) {
-            Map<String, String> responseData = new HashMap<>();
-            responseData.put("idOfUser", String.valueOf(us.getId().getIdUser()));
-
             HttpHeaders headers = new HttpHeaders();
             headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
 
@@ -101,34 +95,24 @@ public class RoomController {
                     String.class);
 
             JSONObject json = new JSONObject(responseUser.getBody());
-            LOGGER.info(json.toString());
 
-            responseData.put("username", json.getString("username"));
-            responseData.put("email", json.getString("email"));
+            UserJson userJson = new UserJson(us.getId().getIdUser(), json.getString("username"),
+                    json.getString("email"), us.getStatus(), us.getChosenTank(), idOfRoom);
 
-            responseData.put("readyToPlay", String.valueOf(us.getStatus()));
-            responseData.put("chosenTank", us.getChosenTank());
-            responseData.put("idOfRoom", String.valueOf(idOfRoom));
-
-            responseArray.put(responseData);
+            usersJsonList.add(userJson);
         }
 
-        int idOfAdmin = roomRepository.findById(idOfRoom).getIdOwner();
-        Map<String, String> response = new HashMap<>();
-        response.put("users", responseArray.toString());
-        response.put("idOfAdmin", String.valueOf(idOfAdmin));
-        return response;
+        GameStatusJson gameStatusJson = new GameStatusJson(usersJsonList);
+        return gameStatusJson;
     }
 
     @RequestMapping(value = "/game/users", method = RequestMethod.GET)
-    public Map<String, String> gameUsers(@RequestParam("idOfRoom") int idOfRoom) {
+    public UsersRoomJson gameUsers(@RequestParam("idOfRoom") int idOfRoom) {
 
         List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
 
-        JSONArray responseArray = new JSONArray();
+        List<UserRoomJson> list = new ArrayList<>();
         for (UsersRoom us : usersRoomList) {
-            JSONObject jsonObject = new JSONObject();
-
             int idOfUser = us.getId().getIdUser();
             String choosenTank = us.getChosenTank();
             int readyToPlay = us.getStatus();
@@ -150,40 +134,30 @@ public class RoomController {
             String username = json.getString("username");
             String email = json.getString("email");
 
-            jsonObject.put("idOfUser", idOfUser);
-            jsonObject.put("username", username);
-            jsonObject.put("email", email);
-            jsonObject.put("choosenTank", choosenTank);
-            jsonObject.put("readyToPlay", readyToPlay);
-            jsonObject.put("idOfRoom", idOfRoom);
-
-            responseArray.put(jsonObject);
+            UserRoomJson userRoomJson = new UserRoomJson(idOfUser, username, email, choosenTank, readyToPlay, idOfRoom);
+            list.add(userRoomJson);
         }
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("users", responseArray.toString());
-        return responseData;
+        UsersRoomJson usersRoomJson = new UsersRoomJson(list);
+        return usersRoomJson;
     }
 
     @Autowired
     RoomRepository roomRepository;
 
     @RequestMapping(value = "/game/is-started", method = RequestMethod.GET)
-    public Map<String, String> gameIsStarted(@RequestParam("idOfRoom") int idOfRoom) {
+    public GameIsStartedJson gameIsStarted(@RequestParam("idOfRoom") int idOfRoom) {
 
-        Map<String, String> responseData = null;
+        GameIsStartedJson gameIsStartedJson = null;
         try {
             Room room = roomRepository.findById(idOfRoom);
-
             boolean status = room.isStarted();
 
-            responseData = new HashMap<>();
-            responseData.put("status", String.valueOf(status));
-            responseData.put("idOfRoom", String.valueOf(idOfRoom));
+            gameIsStartedJson = new GameIsStartedJson(status, idOfRoom);
         } catch (Exception e) {
         }
 
-        return responseData;
+        return gameIsStartedJson;
     }
 
     static final String URL_USER_INFO = "http://localhost:8084/user/info";
@@ -192,7 +166,7 @@ public class RoomController {
     UsersRoomService usersRoomService;
 
     @RequestMapping(value = "/invite-user", method = RequestMethod.DELETE)
-    public Map<String, String> deleteInviteUser(@RequestParam("idOfInvite") String idOfInvite) {
+    public InviteUserDeleteJson deleteInviteUser(@RequestParam("idOfInvite") String idOfInvite) {
 
         int index = idOfInvite.indexOf("-");
         int idRoom = Integer.parseInt(idOfInvite.substring(0, index));
@@ -200,28 +174,24 @@ public class RoomController {
 
         UsersRoom us = new UsersRoom(idRoom, idUser);
         usersRoomService.deleteUsersRoom(us);
+        InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(true, 0, 0);
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("status", "true");
-        return responseData;
+        return inviteUserDeleteJson;
     }
 
     @RequestMapping(value = "/invite-admin", method = RequestMethod.DELETE)
-    public Map<String, String> deleteInviteAdmin(@RequestParam("idOfUser") int idOfUser, @RequestParam("idOfRoom") int idOfRoom) {
+    public InviteUserDeleteJson deleteInviteAdmin(@RequestParam("idOfUser") int idOfUser, @RequestParam("idOfRoom") int idOfRoom) {
 
         UsersRoom us = new UsersRoom(idOfRoom, idOfUser);
         usersRoomService.deleteUsersRoom(us);
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("status", "true");
-        responseData.put("idOfDeletedUser", String.valueOf(idOfUser));
-        responseData.put("idOfRoom", String.valueOf(idOfRoom));
-        return responseData;
+        InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(true, idOfUser, idOfRoom);
+        return inviteUserDeleteJson;
     }
 
     //TODO удаление
     @RequestMapping(value = "/game/exit", method = RequestMethod.POST)
-    public Map<String, String> gameExit(@RequestBody String request) {
+    public InviteUserDeleteJson gameExit(@RequestBody String request) {
         JSONObject jsonObject = new JSONObject(request);
         int idOfUser = jsonObject.getInt("idOfUser");
         int idOfRoom = jsonObject.getInt("idOfRoom");
@@ -230,9 +200,7 @@ public class RoomController {
         UsersRoom us = new UsersRoom(idOfRoom, idOfUser);
         usersRoomService.deleteUsersRoom(us);
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("status", "true");
-        responseData.put("idOfRoom", String.valueOf(idOfRoom));
-        return responseData;
+        InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(true, 0, idOfRoom);
+        return inviteUserDeleteJson;
     }
 }

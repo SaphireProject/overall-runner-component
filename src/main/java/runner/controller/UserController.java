@@ -10,12 +10,16 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import runner.config.JwtGenerator;
+import runner.jsonObjectUI.StrategiesJson;
+import runner.jsonObjectUI.StrategyJson;
+import runner.jsonObjectUI.UserReadyJson;
 import runner.models.Strategies;
 import runner.models.UsersRoom;
 import runner.repository.StrategiesRepository;
 import runner.repository.UsersRoomRepository;
 import runner.services.UsersRoomService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,23 +38,20 @@ public class UserController {
     StrategiesRepository strategiesRepository;
 
     @RequestMapping(value = "/user/strategies", method = RequestMethod.GET)
-    public Map<String, String> strategies(@RequestHeader("Authorization") String request, @RequestParam("game") String game) {
+    public StrategiesJson strategies(@RequestHeader("Authorization") String request, @RequestParam("game") String game) {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
 
-        JSONArray responseArr = new JSONArray();
+        List<StrategyJson> list = new ArrayList<>();
 
         List<Strategies> strategiesList = strategiesRepository.getByIdUserAndTypeGame(id, game);
         for (Strategies strategies : strategiesList) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("id", strategies.getId());
-            jsonObject.put("name", strategies.getName());
-            responseArr.put(jsonObject);
+            StrategyJson strategyJson = new StrategyJson(strategies.getId(), strategies.getName());
+            list.add(strategyJson);
         }
 
-        Map<String, String> response = new HashMap<>();
-        response.put("strategies", String.valueOf(responseArr));
-        return response;
+        StrategiesJson strategyJson = new StrategiesJson(list);
+        return strategyJson;
     }
 
     @RequestMapping(value = "/user/strategy", method = RequestMethod.GET)
@@ -73,7 +74,7 @@ public class UserController {
     static final String URL_USER_INFO = "http://localhost:8084/user/info";
 
     @RequestMapping(value = "/user-ready", method = RequestMethod.POST)
-    public Map<String, String> userReady(@RequestBody String requestBody) {
+    public UserReadyJson userReady(@RequestBody String requestBody) {
         JSONObject jsonObject = new JSONObject(requestBody);
 
         String username = jsonObject.getString("username");
@@ -122,20 +123,18 @@ public class UserController {
             usersRoomService.updateUsersRoom(usersRoom);
         }
 
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put("status", String.valueOf(usersRoom.getStatus()));
-        responseMap.put("username", username);
-        responseMap.put("idOfChosenStrategy", String.valueOf(usersRoom.getIdStrategy()));
-        responseMap.put("chosenTank", usersRoom.getChosenTank());
-        responseMap.put("idOfRoom", String.valueOf(idOfRoom));
-        return responseMap;
+        UserReadyJson userReadyJson = new UserReadyJson(true, username,
+                usersRoom.getIdStrategy(), idOfRoom,
+                usersRoom.getChosenTank());
+
+        return userReadyJson;
     }
 
     @Autowired
     JwtGenerator jwtGenerator;
 
     @RequestMapping(value = "/notification-new", method = RequestMethod.GET)
-    public Map<String, String> notification(@RequestHeader("Authorization") String request) {
+    public Map<String, Integer> notification(@RequestHeader("Authorization") String request) {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
 
@@ -148,8 +147,8 @@ public class UserController {
             }
         }
 
-        Map<String, String> responseData = new HashMap<>();
-        responseData.put("countOfNotifications", String.valueOf(countOfNotifications));
+        Map<String, Integer> responseData = new HashMap<>();
+        responseData.put("countOfNotifications", countOfNotifications);
         return responseData;
     }
 
