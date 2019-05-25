@@ -4,15 +4,15 @@ public class UserJson {
     private int idOfUser;
     private String username;
     private  String email;
-    private int readyToStart;
+    private int readyToPlay;
     private String chosenTank;
     private int idOfRoom;
 
-    public UserJson(int idOfUser, String username, String email, int readyToStart, String chosenTank, int idOfRoom) {
+    public UserJson(int idOfUser, String username, String email, int readyToPlay, String chosenTank, int idOfRoom) {
         this.idOfUser = idOfUser;
         this.username = username;
         this.email = email;
-        this.readyToStart = readyToStart;
+        this.readyToPlay = readyToPlay;
         this.chosenTank = chosenTank;
         this.idOfRoom = idOfRoom;
     }
@@ -42,11 +42,11 @@ public class UserJson {
     }
 
     public int getReadyToStart() {
-        return readyToStart;
+        return readyToPlay;
     }
 
-    public void setReadyToStart(int readyToStart) {
-        this.readyToStart = readyToStart;
+    public void setReadyToStart(int readyToPlay) {
+        this.readyToPlay = readyToPlay;
     }
 
     public String getChosenTank() {

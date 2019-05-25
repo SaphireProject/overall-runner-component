@@ -66,6 +66,11 @@ public class RoomController {
         ParametersRoom parametersRoom = new ParametersRoom(nameOfRoom, room.getId(), map.toString());
         parametersRoomRepository.save(parametersRoom);
 
+        UsersRoom us = new UsersRoom(room.getId(), idOfAdmin);
+        us.setCheckInvite(true);
+        us.setStatus(1);
+        usersRoomService.saveUsersRoom(us);
+
         RoomJson responceRoomJson = new RoomJson(room.getId(), nameOfRoom,
                 idOfAdmin, usernameOfAdmin,
                 countOfPlayers, heightOfMapForGame,
