@@ -8,9 +8,12 @@ public class GameStatusJson {
 
     private int idOfAdmin;
 
-    public GameStatusJson(List<UserJson> users, int idOfAdmin) {
+    private int countOfPlayers;
+
+    public GameStatusJson(List<UserJson> users, int idOfAdmin, int countOfPlayers) {
         this.users = users;
         this.idOfAdmin = idOfAdmin;
+        this.countOfPlayers = countOfPlayers;
     }
 
     public List<UserJson> getUsers() {
@@ -27,5 +30,13 @@ public class GameStatusJson {
 
     public void setIdOfAdmin(int idOfAdmin) {
         this.idOfAdmin = idOfAdmin;
+    }
+
+    public int getCountOfUsers() {
+        return countOfPlayers;
+    }
+
+    public void setCountOfUsers(int countOfPlayers) {
+        this.countOfPlayers = countOfPlayers;
     }
 }

@@ -87,6 +87,9 @@ public class RoomController {
 
         int idOfAdmin = roomRepository.findById(idOfRoom).getIdOwner();
 
+        JSONObject paramJson = new JSONObject(parametersRoomRepository.getByIdIdRoom(idOfRoom).getValue());
+        int countOfPlayers = paramJson.getInt("countOfPlayers");
+
         List<UserJson> usersJsonList = new ArrayList<>();
 
         for (UsersRoom us : usersRoomList) {
@@ -111,7 +114,7 @@ public class RoomController {
             usersJsonList.add(userJson);
         }
 
-        GameStatusJson gameStatusJson = new GameStatusJson(usersJsonList, idOfAdmin);
+        GameStatusJson gameStatusJson = new GameStatusJson(usersJsonList, idOfAdmin, countOfPlayers);
         return gameStatusJson;
     }
 
