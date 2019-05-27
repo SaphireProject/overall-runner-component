@@ -7,14 +7,16 @@ import javax.persistence.*;
 public class Snapshots {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int idroom;
+    @Column(name = "idroom")
+    private int idRoom;
 
     private String snapshot;
 
-    private int type;
+    private int counter;
 
     public Long getId() {
         return id;
@@ -25,11 +27,11 @@ public class Snapshots {
     }
 
     public int getIdRoom() {
-        return idroom;
+        return idRoom;
     }
 
-    public void setIdRoom(int idroom) {
-        this.idroom = idroom;
+    public void setIdRoom(int idRoom) {
+        this.idRoom = idRoom;
     }
 
     public String getSnapshot() {
@@ -40,11 +42,11 @@ public class Snapshots {
         this.snapshot = snapshot;
     }
 
-    public int getType() {
-        return type;
+    public int getCounter() {
+        return counter;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setCounter(int counter) {
+        this.counter = counter;
     }
 }

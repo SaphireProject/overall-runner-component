@@ -1,5 +1,7 @@
 package runner.jsonObject;
 
+import org.json.JSONObject;
+
 public class FrameJson {
     private int snapshotNumber;
     private AnimationJson animations;
@@ -27,4 +29,5 @@ public class FrameJson {
     public void setAnimations(AnimationJson animations) {
         this.animations = animations;
     }
+
 }

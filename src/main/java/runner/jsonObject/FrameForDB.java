@@ -1,5 +1,7 @@
 package runner.jsonObject;
 
+import org.json.JSONObject;
+
 public class FrameForDB {
     private int id;
     private String value;

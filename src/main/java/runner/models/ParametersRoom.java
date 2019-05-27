@@ -5,6 +5,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "parameters_room")
 public class ParametersRoom {
+
     @EmbeddedId
     private ParametersRoomId id;
 
