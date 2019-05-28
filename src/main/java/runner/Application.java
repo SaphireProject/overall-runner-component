@@ -1,11 +1,18 @@
 package runner;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @SpringBootApplication
 @ComponentScan
@@ -16,5 +23,19 @@ public class Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+
+        DefaultDockerClientConfig config
+                = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost("tcp://85.119.150.240:2550").build();
+
+        DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+
+        List<Image> list = dockerClient.listImagesCmd().exec();
+
+        LOGGER.info(String.valueOf(list.size()));
+
+        for (Image image: list) {
+            LOGGER.info(image.getId());
+        }
     }
 }
