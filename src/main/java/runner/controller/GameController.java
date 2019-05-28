@@ -1,5 +1,8 @@
 package runner.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -116,29 +119,33 @@ public class GameController {
     }
 
     @RequestMapping(value = "/preload", method = RequestMethod.POST)
-    public void getPreload(@RequestBody PreloadFinalJson preloadFinalJson) {
+    public void getPreload(@RequestBody PreloadJson preloadJson) {
+
+        PreloadJson preloadJson1 = new PreloadJson();
+        preloadJson1.setBlocks(preloadJson.getBlocks());
         PreloadFinalJson preloadFinalJson1 = new PreloadFinalJson();
-        preloadFinalJson1.setPreload(preloadFinalJson.getPreload());
+        preloadFinalJson1.setPreload(preloadJson1);
 
-//        PreloadForDB preloadForDB = new PreloadForDB();
-//        preloadForDB.setIdGame(idGame);
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-//
-//        String jsonPreload = null;
-//
-//        try {
-//            jsonPreload = mapper.writeValueAsString(preloadFinalJson1);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
 
-        Gson gson = new Gson();
-        String json = gson.toJson(preloadFinalJson.getPreload());
+        LOGGER.info(preloadFinalJson1.toString());
+// PreloadForDB preloadForDB = new PreloadForDB();
+// preloadForDB.setIdGame(idGame);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        String jsonPreload = null;
+
+        try {
+            jsonPreload = mapper.writeValueAsString(preloadFinalJson1);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        LOGGER.info(jsonPreload);
+// preloadForDB.setValue(jsonPreload);
 
         SnapshotsHelper snapshotsHelper = new SnapshotsHelper(idGame, "preload");
-        snapshotsHelper.setValue(json);
+        snapshotsHelper.setValue(jsonPreload);
         snapshotsHelperRepository.save(snapshotsHelper);
     }
 

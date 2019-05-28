@@ -3,15 +3,17 @@ package runner.jsonObject;
 import org.json.JSONObject;
 
 public class FrameJson {
+    private static int idSnapshot=0;
     private int snapshotNumber;
     private AnimationJson animations;
 
     public FrameJson() {
     }
 
-    public FrameJson(AnimationJson animations, int snapshotNumber) {
-        this.snapshotNumber = snapshotNumber;
+    public FrameJson(AnimationJson animations) {
+        this.snapshotNumber = idSnapshot;
         this.animations = animations;
+        idSnapshot++;
     }
 
     public int getSnapshotNumber() {
