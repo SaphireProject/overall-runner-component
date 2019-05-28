@@ -3,41 +3,42 @@ package runner.jsonObjectUI;
 import runner.jsonObject.EndOfGame;
 import runner.jsonObject.FrameJson;
 import runner.jsonObject.PreloadFinalJson;
+import runner.jsonObject.PreloadJson;
 import runner.models.Snapshots;
 import runner.models.SnapshotsHelper;
 
 import java.util.List;
 
 public class GameSnapshot {
-    private SnapshotsHelper preloadFinalJson;
+    private PreloadJson preload;
 
-    private List<Snapshots> frameJson;
+    private List<FrameJson> frames;
 
     private EndOfGame endOfGame;
 
-    public GameSnapshot(SnapshotsHelper preloadFinalJson, List<Snapshots> frameJson, EndOfGame endOfGame) {
-        this.preloadFinalJson = preloadFinalJson;
-        this.frameJson = frameJson;
+    public GameSnapshot(PreloadJson preload, List<FrameJson> frames, EndOfGame endOfGame) {
+        this.preload = preload;
+        this.frames = frames;
         this.endOfGame = endOfGame;
     }
 
     public GameSnapshot() {
     }
 
-    public SnapshotsHelper getPreloadFinalJson() {
-        return preloadFinalJson;
+    public PreloadJson getPreload() {
+        return preload;
     }
 
-    public void setPreloadFinalJson(SnapshotsHelper preloadFinalJson) {
-        this.preloadFinalJson = preloadFinalJson;
+    public void setPreload(PreloadJson preload) {
+        this.preload = preload;
     }
 
-    public List<Snapshots> getFrameJson() {
-        return frameJson;
+    public List<FrameJson> getFrames() {
+        return frames;
     }
 
-    public void setFrameJson(List<Snapshots> frameJson) {
-        this.frameJson = frameJson;
+    public void setFrames(List<FrameJson> frames) {
+        this.frames = frames;
     }
 
     public EndOfGame getEndOfGame() {

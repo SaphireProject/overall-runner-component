@@ -21,5 +21,5 @@ public interface UsersRoomRepository extends CrudRepository<UsersRoom, Integer> 
 
     UsersRoom deleteById(UsersRoomId id);
 
-    UsersRoom getById(UsersRoomId id);
+    UsersRoom getByIdIdUser(int id);
 }

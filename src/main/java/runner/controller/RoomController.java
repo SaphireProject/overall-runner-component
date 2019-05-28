@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import runner.config.JwtGenerator;
 import runner.data.ParameterMetida;
 import runner.jsonObjectUI.*;
@@ -83,7 +85,12 @@ public class RoomController {
     @RequestMapping(value = "/game-status", method = RequestMethod.GET)
     public GameStatusJson gameStatus(@RequestParam("idOfRoom") int idOfRoom) {
 
-        List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
+        List<UsersRoom> usersRoomList = null;
+        try {
+            usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room was not found.");
+        }
 
         int idOfAdmin = roomRepository.findById(idOfRoom).getIdOwner();
 
@@ -98,13 +105,18 @@ public class RoomController {
 
             HttpEntity<String> entity = new HttpEntity<>("", headers);
 
-            //TODO к Мише переделать запрос под GET
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> responseUser = restTemplate.exchange(
-                    URL_USER_ID + us.getId().getIdUser(),
-                    HttpMethod.GET,
-                    entity,
-                    String.class);
+
+            ResponseEntity<String> responseUser = null;
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                responseUser = restTemplate.exchange(
+                        URL_USER_ID + us.getId().getIdUser(),
+                        HttpMethod.GET,
+                        entity,
+                        String.class);
+            } catch (RestClientException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not found.");
+            }
 
             JSONObject json = new JSONObject(responseUser.getBody());
 
@@ -121,7 +133,12 @@ public class RoomController {
     @RequestMapping(value = "/game/users", method = RequestMethod.GET)
     public UsersRoomJson gameUsers(@RequestParam("idOfRoom") int idOfRoom) {
 
-        List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
+        List<UsersRoom> usersRoomList = null;
+        try {
+            usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room was not found.");
+        }
 
         List<UserRoomJson> list = new ArrayList<>();
         for (UsersRoom us : usersRoomList) {
@@ -134,13 +151,17 @@ public class RoomController {
 
             HttpEntity<String> entity = new HttpEntity<>("", headers);
 
-            //TODO к Мише переделать запрос под GET
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> responseUser = restTemplate.exchange(
-                    URL_USER_ID + idOfUser,
-                    HttpMethod.GET,
-                    entity,
-                    String.class);
+            ResponseEntity<String> responseUser = null;
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                responseUser = restTemplate.exchange(
+                        URL_USER_ID + idOfUser,
+                        HttpMethod.GET,
+                        entity,
+                        String.class);
+            } catch (RestClientException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not found.");
+            }
 
             JSONObject json = new JSONObject(responseUser.getBody());
             String username = json.getString("username");
@@ -192,12 +213,16 @@ public class RoomController {
     }
 
     @RequestMapping(value = "/invite-admin", method = RequestMethod.DELETE)
-    public InviteUserDeleteJson deleteInviteAdmin(@RequestParam("idOfUser") int idOfUser, @RequestParam("idOfRoom") int idOfRoom) {
+    public InviteUserDeleteJson deleteInviteAdmin(@RequestParam("idOfUser") int idOfUser,
+                                                  @RequestParam("idOfRoom") int idOfRoom) {
 
         UsersRoom us = new UsersRoom(idOfRoom, idOfUser);
         usersRoomService.deleteUsersRoom(us);
 
-        InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(true, idOfUser, idOfRoom);
+        InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(
+                true,
+                idOfUser,
+                idOfRoom);
         return inviteUserDeleteJson;
     }
 

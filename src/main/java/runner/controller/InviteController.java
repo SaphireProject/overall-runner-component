@@ -1,13 +1,16 @@
 package runner.controller;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import runner.config.JwtGenerator;
 import runner.dao.ParameterRoomDAO;
 import runner.data.InviteUsers;
@@ -54,22 +57,33 @@ public class InviteController {
 
         HttpEntity<Map> entity = new HttpEntity<>(body, headers);
 
-        //TODO к Мише переделать запрос под GET
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseUser = restTemplate.exchange(
-                URL_USER_INFO,
-                HttpMethod.POST,
-                entity,
-                String.class);
+        Integer id = null;
+        String email = null;
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> responseUser = restTemplate.exchange(
+                    URL_USER_INFO,
+                    HttpMethod.POST,
+                    entity,
+                    String.class);
 
-        jsonObject = new JSONObject(responseUser.getBody());
+            jsonObject = new JSONObject(responseUser.getBody());
 
-        Integer id = jsonObject.getInt("id");
-        String email = jsonObject.getString("email");
+            id = jsonObject.getInt("id");
+            email = jsonObject.getString("email");
+        } catch (RestClientException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not found.");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         UsersRoomService usersRoomService = new UsersRoomService();
         UsersRoom usersRoom = new UsersRoom(idOfRoom, id);
-        usersRoomService.saveUsersRoom(usersRoom);
+        try {
+            usersRoomService.saveUsersRoom(usersRoom);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User has already been added.");
+        }
 
         InviteUserJson inviteUserJson = new InviteUserJson(id, email, name, idOfRoom);
 
@@ -85,8 +99,6 @@ public class InviteController {
     public InvitesJson notification(@RequestHeader("Authorization") String request) {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
-
-        LOGGER.info(String.valueOf(id));
 
         List<UsersRoom> usersRoomList = usersRoomRepository.findByIdIdUser(id);
 
@@ -116,7 +128,6 @@ public class InviteController {
 
             HttpEntity<String> entity = new HttpEntity<>("", headers);
 
-            //TODO к Мише переделать запрос под GET
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<String> responseUser = restTemplate.exchange(
                     URL_USER_ID + idOfAdmin,
@@ -128,20 +139,20 @@ public class InviteController {
             String usernameOfAdmin = json.getString("username");
             String emailOfAdmin = json.getString("email");
 
-            InviteJson inviteJson = new InviteJson(idOfInvite, idOfRoom, nameOfRoom, idOfAdmin, usernameOfAdmin,
-                    emailOfAdmin, countOfPlayers, heightOfMapForGame, widthOfMapForGame);
+            if (idOfAdmin != id) {
+                InviteJson inviteJson = new InviteJson(idOfInvite, idOfRoom, nameOfRoom, idOfAdmin, usernameOfAdmin,
+                        emailOfAdmin, countOfPlayers, heightOfMapForGame, widthOfMapForGame);
+                list.add(inviteJson);
+                us.setCheckInvite(true);
+                usersRoomService.updateUsersRoom(us);
+            }
 
-            list.add(inviteJson);
-
-            us.setCheckInvite(true);
-            usersRoomService.updateUsersRoom(us);
         }
 
         InvitesJson invitesJson = new InvitesJson(list);
         return invitesJson;
     }
 
-    //TODO do it
     @RequestMapping(value = "/invite", method = RequestMethod.DELETE)
     public Map<String, String> deleteInvite(@RequestBody String request) {
         JSONObject jsonObject = new JSONObject(request);
@@ -221,7 +232,6 @@ public class InviteController {
 
         HttpEntity<String> entity = new HttpEntity<>("", headers);
 
-        //TODO к Мише переделать запрос под GET
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> responseUser = restTemplate.exchange(
                 URL_USER_ID + idOfAdmin,
@@ -236,8 +246,15 @@ public class InviteController {
         us.setStatus(1);
         usersRoomService.updateUsersRoom(us);
 
-        InviteJson inviteJson = new InviteJson(idOfInvite, idRoom, nameOfRoom, idOfAdmin, usernameOfAdmin, "", countOfPlayers,
-                heightOfMapForGame, widthOfMapForGame);
+        InviteJson inviteJson = new InviteJson(idOfInvite,
+                idRoom,
+                nameOfRoom,
+                idOfAdmin,
+                usernameOfAdmin,
+                "",
+                countOfPlayers,
+                heightOfMapForGame,
+                widthOfMapForGame);
         return inviteJson;
     }
 }

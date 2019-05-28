@@ -1,8 +1,5 @@
 package runner.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -12,8 +9,10 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import runner.config.JwtGenerator;
 import runner.data.Counter;
 import runner.data.ParameterMetida;
 import runner.data.SetMetida;
@@ -56,6 +55,9 @@ public class GameController {
     @Autowired
     SnapshotsRepository snapshotsRepository;
 
+    @Autowired
+    JwtGenerator jwtGenerator;
+
     @RequestMapping(value = "/start", method = RequestMethod.GET)
     public void startMatida() {
 
@@ -69,6 +71,7 @@ public class GameController {
         List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(requestBody.getId());
         List<StrategyJson> strategyJsonList = new ArrayList<>();
         for (UsersRoom us : usersRoomList) {
+            LOGGER.info(String.valueOf(us.getId().getIdUser()));
             String strategy = strategiesRepository.getById(us.getIdStrategy()).getDescription();
             String name = strategiesRepository.getById(us.getIdStrategy()).getName();
             StrategyJson strategyJson = new StrategyJson(us.getIdStrategy(), name, strategy);
@@ -81,21 +84,35 @@ public class GameController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public GameSnapshot getSnapshots(@RequestParam("page") int page, @RequestParam("size") int size) throws Exception {
-        GameSnapshot gameSnapshot = new GameSnapshot();
+    public GameSnapshot getSnapshots(@RequestHeader("Authorization") String request,
+                                     @RequestParam("page") int page,
+                                     @RequestParam("size") int size) throws Exception {
 
-        List<Snapshots> listS = new ArrayList<>();
-        List<Snapshots> snapshotsList = snapshotsRepository.findAll(idGame, page, size);
-        for (Snapshots snapshots : snapshotsList) {
-            listS.add(snapshots);
+        int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
+        UsersRoom us = usersRoomRepository.getByIdIdUser(id);
+        if (us.getId().getIdRoom() == idGame) {
+            GameSnapshot gameSnapshot = new GameSnapshot();
+            List<FrameJson> listS = new ArrayList<>();
+            List<Snapshots> snapshotsList = snapshotsRepository.findAll(idGame, page, size);
+            for (Snapshots snapshots : snapshotsList) {
+
+                Gson gson = new Gson();
+                FrameJson frameJson = gson.fromJson(snapshots.getSnapshot(), FrameJson.class);
+
+                listS.add(frameJson);
+            }
+
+            Gson gson = new Gson();
+            SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idGame);
+            PreloadJson preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
+            gameSnapshot.setPreload(preloadFinalJson);
+            gameSnapshot.setFrames(listS);
+
+            return gameSnapshot;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room was not found.");
         }
 
-        SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idGame);
-
-        gameSnapshot.setPreloadFinalJson(snapshotsHelper);
-        gameSnapshot.setFrameJson(listS);
-
-        return gameSnapshot;
     }
 
     @RequestMapping(value = "/preload", method = RequestMethod.POST)
@@ -105,22 +122,23 @@ public class GameController {
 
 //        PreloadForDB preloadForDB = new PreloadForDB();
 //        preloadForDB.setIdGame(idGame);
+//
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+//
+//        String jsonPreload = null;
+//
+//        try {
+//            jsonPreload = mapper.writeValueAsString(preloadFinalJson1);
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-        String jsonPreload = null;
-
-        try {
-            jsonPreload = mapper.writeValueAsString(preloadFinalJson1);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-//        preloadForDB.setValue(jsonPreload);
+        Gson gson = new Gson();
+        String json = gson.toJson(preloadFinalJson.getPreload());
 
         SnapshotsHelper snapshotsHelper = new SnapshotsHelper(idGame, "preload");
-        snapshotsHelper.setValue(jsonPreload);
+        snapshotsHelper.setValue(json);
         snapshotsHelperRepository.save(snapshotsHelper);
     }
 
@@ -189,10 +207,15 @@ public class GameController {
     }
 
     @RequestMapping(value = "/strategy", method = RequestMethod.GET)
-    public String getStrategy(@RequestParam("idOfChosenStrategy") int id){
+    public String getStrategy(@RequestParam("idOfChosenStrategy") int id) {
         String str = strategiesRepository.getById(id).getDescription();
         return str;
     }
+
+
 }
 
 // для Миши сделать ответ стратегией обычной
+
+// в общем про работу раннера, проблемы его, 3 слайда, на одном схема, и короткая инфа
+// про реббит основная инфа

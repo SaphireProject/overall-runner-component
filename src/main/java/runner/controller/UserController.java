@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import runner.config.JwtGenerator;
 import runner.jsonObjectUI.StrategiesJson;
 import runner.jsonObjectUI.StrategyJson;
@@ -44,7 +45,13 @@ public class UserController {
 
         List<StrategyJson> list = new ArrayList<>();
 
-        List<Strategies> strategiesList = strategiesRepository.getByIdUserAndTypeGame(id, game);
+        List<Strategies> strategiesList = null;
+        try {
+            strategiesList = strategiesRepository.getByIdUserAndTypeGame(id, game);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Strategy was not found.");
+        }
+
         for (Strategies strategies : strategiesList) {
             StrategyJson strategyJson = new StrategyJson(strategies.getId(), strategies.getName(), "");
             list.add(strategyJson);
@@ -86,7 +93,6 @@ public class UserController {
 
         HttpEntity<Map> entity = new HttpEntity<>(body, headers);
 
-        //TODO к Мише переделать запрос под GET
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> responseUser = restTemplate.exchange(
                 URL_USER_INFO,
