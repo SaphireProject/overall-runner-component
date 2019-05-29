@@ -81,9 +81,9 @@ public class GameController {
         for (Image image: list) {
             LOGGER.info(image.getId());
         }
-
-        dockerClient.startContainerCmd(dockerClient.createContainerCmd("a5d40ec0d644").withEnv("RUNNER_URL='http://85.119.150.163/game/parameters'").exec().getId()).exec();
-
+        String id = dockerClient.createContainerCmd("a5d40ec0d644").withEnv("RUNNER_URL=http://85.119.150.163:8085").exec().getId();
+        LOGGER.info("Id container {}", id);
+        dockerClient.startContainerCmd(id).exec();
     }
 
     @RequestMapping(value = "/parameters", method = RequestMethod.POST)
