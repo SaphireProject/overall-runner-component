@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/mr
     username: postgres
-    password: 1234
+    password: postgres
     generate-ddl: false
 jwt:
   expireDays: 3000

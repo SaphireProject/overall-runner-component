@@ -82,7 +82,7 @@ public class GameController {
             LOGGER.info(image.getId());
         }
 
-        dockerClient.startContainerCmd(dockerClient.createContainerCmd("a5d40ec0d644").withEnv("RUNNER_URL='http://85.119.150.163'").exec().getId()).exec();
+        dockerClient.startContainerCmd(dockerClient.createContainerCmd("a5d40ec0d644").withEnv("RUNNER_URL='http://85.119.150.163/game/parameters'").exec().getId()).exec();
 
     }
 
