@@ -40,6 +40,11 @@ public class InviteController {
     @Autowired
     UsersRoomRepository usersRoomRepository;
 
+    @Autowired
+    RoomRepository roomRepository;
+
+    static final String URL_USER_ID = "http://localhost:8084/user/";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(InviteController.class);
     static final String URL_USER_INFO = "http://localhost:8084/user/info";
 
@@ -90,10 +95,6 @@ public class InviteController {
         return inviteUserJson;
     }
 
-    @Autowired
-    RoomRepository roomRepository;
-
-    static final String URL_USER_ID = "http://localhost:8084/user/";
 
     @RequestMapping(value = "/notification", method = RequestMethod.GET)
     public InvitesJson notification(@RequestHeader("Authorization") String request) {

@@ -3,6 +3,10 @@ package runner.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientBuilder;
 import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -63,6 +67,22 @@ public class GameController {
 
     @RequestMapping(value = "/start", method = RequestMethod.GET)
     public void startMatida() {
+        DefaultDockerClientConfig config
+                = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withRegistryEmail("vorotnikov_dmitry@mail.ru")
+                .withRegistryPassword("b0lx9fqg")
+                .withRegistryUsername("vorotnikovdmitry")
+                .withDockerHost("tcp://85.119.150.240:2550").build();
+
+        DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+
+        List<Image> list = dockerClient.listImagesCmd().exec();
+
+        for (Image image: list) {
+            LOGGER.info(image.getId());
+        }
+
+        dockerClient.startContainerCmd(dockerClient.createContainerCmd("a5d40ec0d644").withEnv("RUNNER_URL='http://85.119.150.163'").exec().getId()).exec();
 
     }
 
@@ -222,7 +242,4 @@ public class GameController {
 
 }
 
-// для Миши сделать ответ стратегией обычной
-
-// в общем про работу раннера, проблемы его, 3 слайда, на одном схема, и короткая инфа
-// про реббит основная инфа
+// рест. раннер запускаем на виртуалке,

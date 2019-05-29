@@ -44,6 +44,12 @@ public class RoomController {
     @Autowired
     ParametersRoomRepository parametersRoomRepository;
 
+    @Autowired
+    RoomRepository roomRepository;
+
+    @Autowired
+    UsersRoomService usersRoomService;
+
     @RequestMapping(value = "/room", method = RequestMethod.POST)
     public RoomJson roomCreate(@RequestBody String response) {
         JSONObject jsonObject = new JSONObject(response);
@@ -175,12 +181,8 @@ public class RoomController {
         return usersRoomJson;
     }
 
-    @Autowired
-    RoomRepository roomRepository;
-
     @RequestMapping(value = "/game/is-started", method = RequestMethod.GET)
     public GameIsStartedJson gameIsStarted(@RequestParam("idOfRoom") int idOfRoom) {
-
         GameIsStartedJson gameIsStartedJson = null;
         try {
             Room room = roomRepository.findById(idOfRoom);
@@ -195,8 +197,6 @@ public class RoomController {
 
     static final String URL_USER_INFO = "http://localhost:8084/user/info";
 
-    @Autowired
-    UsersRoomService usersRoomService;
 
     @RequestMapping(value = "/invite-user", method = RequestMethod.DELETE)
     public InviteUserDeleteJson deleteInviteUser(@RequestParam("idOfInvite") String idOfInvite) {

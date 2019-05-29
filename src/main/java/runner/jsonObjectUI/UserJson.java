@@ -41,11 +41,11 @@ public class UserJson {
         this.email = email;
     }
 
-    public int getReadyToStart() {
+    public int getReadyToPlay() {
         return readyToPlay;
     }
 
-    public void setReadyToStart(int readyToPlay) {
+    public void setReadyToPlay(int readyToPlay) {
         this.readyToPlay = readyToPlay;
     }
 

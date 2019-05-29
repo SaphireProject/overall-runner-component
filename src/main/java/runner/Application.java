@@ -23,19 +23,5 @@ public class Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-
-        DefaultDockerClientConfig config
-                = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost("tcp://85.119.150.240:2550").build();
-
-        DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
-
-        List<Image> list = dockerClient.listImagesCmd().exec();
-
-        LOGGER.info(String.valueOf(list.size()));
-
-        for (Image image: list) {
-            LOGGER.info(image.getId());
-        }
     }
 }
