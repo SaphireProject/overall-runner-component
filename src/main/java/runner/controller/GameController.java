@@ -79,7 +79,7 @@ public class GameController {
             LOGGER.info(image.getId());
         }
 
-        String id = dockerClient.createContainerCmd("605beb5146ef")
+        String id = dockerClient.createContainerCmd("180c01b59c0e")
                 .withEnv("RUNNER_URL=http://85.119.150.163:8085/" + idOfRoom)
                 .exec().getId();
 
