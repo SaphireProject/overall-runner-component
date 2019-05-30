@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/game")
 public class GameController {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameController.class);
 
@@ -48,8 +47,6 @@ public class GameController {
 
     @Autowired
     UsersRoomRepository usersRoomRepository;
-
-    private static int idGame = 22;
 
     private final static String QUEUE_NAME = "snapshots";
 
@@ -65,8 +62,8 @@ public class GameController {
     @Autowired
     JwtGenerator jwtGenerator;
 
-    @RequestMapping(value = "/start", method = RequestMethod.GET)
-    public void startMatida() {
+    @RequestMapping(value = "/game/start", method = RequestMethod.GET)
+    public void startMatida(@RequestParam("idOfRoom") int idOfRoom) {
         DefaultDockerClientConfig config
                 = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withRegistryEmail("vorotnikov_dmitry@mail.ru")
@@ -82,13 +79,16 @@ public class GameController {
             LOGGER.info(image.getId());
         }
 
-        String id =dockerClient.createContainerCmd("a5d40ec0d644").withEnv("RUNNER_URL=http://85.119.150.163:8085").withEnv("idRoom='2'").exec().getId();
+        String id = dockerClient.createContainerCmd("3205f746f545")
+                .withEnv("RUNNER_URL=http://85.119.150.163:8085/" + idOfRoom)
+                .exec().getId();
+
         LOGGER.info("Id container {}", id);
-dockerClient.startContainerCmd(id).exec();
+        dockerClient.startContainerCmd(id).exec();
     }
 
-    @RequestMapping(value = "/parameters/{idRoom}", method = RequestMethod.GET)
-    public ParameterMetida setParameters(@PathVariable int idRoom) {
+    @RequestMapping(value = "{idRoom}/game/parameters", method = RequestMethod.GET)
+    public ParameterMetida setParameters(@PathVariable(name = "idRoom") int idRoom) {
         ParametersRoom parametersRoom = parametersRoomRepository.getByIdIdRoom(idRoom);
         JSONObject json = new JSONObject(parametersRoom.getValue());
 
@@ -107,17 +107,18 @@ dockerClient.startContainerCmd(id).exec();
         return parameterMetida;
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "/game", method = RequestMethod.GET)
     public GameSnapshot getSnapshots(@RequestHeader("Authorization") String request,
                                      @RequestParam("page") int page,
-                                     @RequestParam("size") int size) throws Exception {
+                                     @RequestParam("size") int size,
+                                     @PathVariable(name = "idRoom") int idRoom) throws Exception {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
         UsersRoom us = usersRoomRepository.getByIdIdUser(id);
-        if (us.getId().getIdRoom() == idGame) {
+        if (us.getId().getIdRoom() == idRoom) {
             GameSnapshot gameSnapshot = new GameSnapshot();
             List<FrameJson> listS = new ArrayList<>();
-            List<Snapshots> snapshotsList = snapshotsRepository.findAll(idGame, page, size);
+            List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
             for (Snapshots snapshots : snapshotsList) {
 
                 Gson gson = new Gson();
@@ -127,7 +128,7 @@ dockerClient.startContainerCmd(id).exec();
             }
 
             Gson gson = new Gson();
-            SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idGame);
+            SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
             PreloadJson preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
             gameSnapshot.setPreload(preloadFinalJson);
             gameSnapshot.setFrames(listS);
@@ -139,8 +140,9 @@ dockerClient.startContainerCmd(id).exec();
 
     }
 
-    @RequestMapping(value = "/preload", method = RequestMethod.POST)
-    public void getPreload(@RequestBody PreloadJson preloadJson) {
+    @RequestMapping(value = "{idRoom}/game/preload", method = RequestMethod.POST)
+    public void getPreload(@RequestBody PreloadJson preloadJson,
+                           @PathVariable(name = "idRoom") int idRoom) {
 
         PreloadJson preloadJson1 = new PreloadJson();
         preloadJson1.setBlocks(preloadJson.getBlocks());
@@ -165,13 +167,13 @@ dockerClient.startContainerCmd(id).exec();
         LOGGER.info(jsonPreload);
 // preloadForDB.setValue(jsonPreload);
 
-        SnapshotsHelper snapshotsHelper = new SnapshotsHelper(idGame, "preload");
+        SnapshotsHelper snapshotsHelper = new SnapshotsHelper(idRoom, "preload");
         snapshotsHelper.setValue(jsonPreload);
         snapshotsHelperRepository.save(snapshotsHelper);
     }
 
-    @RequestMapping(value = "/animation")
-    public void getFrameJson(@RequestBody FrameJson frameJson) throws Exception {
+    @RequestMapping(value = "{idRoom}/game/animation")
+    public void getFrameJson(@RequestBody FrameJson frameJson, @PathVariable(name = "idRoom") int idRoom) throws Exception {
 //        FrameJson frameJson1 = new FrameJson();
 //        frameJson1.setSnapshotNumber(frameJson.getSnapshotNumber());
 //        frameJson1.setAnimations(frameJson.getAnimations());
@@ -222,7 +224,7 @@ dockerClient.startContainerCmd(id).exec();
 
                 Snapshots snapshots = new Snapshots();
                 snapshots.setSnapshot(message);
-                snapshots.setIdRoom(idGame);
+                snapshots.setIdRoom(idRoom);
 
                 snapshotsRepository.save(snapshots);
             };
@@ -234,7 +236,7 @@ dockerClient.startContainerCmd(id).exec();
 
     }
 
-    @RequestMapping(value = "/strategy", method = RequestMethod.GET)
+    @RequestMapping(value = "/game/strategy", method = RequestMethod.GET)
     public String getStrategy(@RequestParam("idOfChosenStrategy") int id) {
         String str = strategiesRepository.getById(id).getDescription();
         return str;
