@@ -79,7 +79,7 @@ public class GameController {
             LOGGER.info(image.getId());
         }
 
-        String id = dockerClient.createContainerCmd("3205f746f545")
+        String id = dockerClient.createContainerCmd("16979d23327b")
                 .withEnv("RUNNER_URL=http://85.119.150.163:8085/" + idOfRoom)
                 .exec().getId();
 
@@ -102,8 +102,10 @@ public class GameController {
             strategyJsonList.add(strategyJson);
         }
 
-        ParameterMetida parameterMetida = new ParameterMetida(json.getInt("countOfPlayers"), json.getInt("heightOfMapForGame"),
-                json.getInt("widthOfMapForGame"), strategyJsonList);
+        ParameterMetida parameterMetida = new ParameterMetida(json.getInt("countOfPlayers"),
+                json.getInt("heightOfMapForGame"),
+                json.getInt("widthOfMapForGame"),
+                strategyJsonList);
         return parameterMetida;
     }
 
@@ -148,7 +150,6 @@ public class GameController {
         preloadJson1.setBlocks(preloadJson.getBlocks());
         PreloadFinalJson preloadFinalJson1 = new PreloadFinalJson();
         preloadFinalJson1.setPreload(preloadJson1);
-
 
         LOGGER.info(preloadFinalJson1.toString());
 // PreloadForDB preloadForDB = new PreloadForDB();
