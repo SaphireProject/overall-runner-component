@@ -1,7 +1,5 @@
 package runner.data;
 
-import runner.models.Strategies;
-
 public class SetMetida {
     private int id;
     private String type;

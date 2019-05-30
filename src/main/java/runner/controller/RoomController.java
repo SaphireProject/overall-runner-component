@@ -77,7 +77,7 @@ public class RoomController {
         UsersRoom us = new UsersRoom(room.getId(), idOfAdmin);
         us.setCheckInvite(true);
         us.setStatus(1);
-        usersRoomService.saveUsersRoom(us);
+        usersRoomRepository.save(us);
 
         RoomJson responceRoomJson = new RoomJson(room.getId(), nameOfRoom,
                 idOfAdmin, usernameOfAdmin,
@@ -241,3 +241,5 @@ public class RoomController {
         return inviteUserDeleteJson;
     }
 }
+
+

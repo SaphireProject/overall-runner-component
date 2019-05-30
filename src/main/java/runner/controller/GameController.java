@@ -78,20 +78,23 @@ public class GameController {
 
         List<Image> list = dockerClient.listImagesCmd().exec();
 
-        for (Image image: list) {
+        for (Image image : list) {
             LOGGER.info(image.getId());
         }
 
-        dockerClient.startContainerCmd(dockerClient.createContainerCmd("a5d40ec0d644").withEnv("RUNNER_URL='http://85.119.150.163/game/parameters'").exec().getId()).exec();
-
+        dockerClient.startContainerCmd(dockerClient
+                .createContainerCmd("a5d40ec0d644")
+                .withEnv("RUNNER_URL='http://85.119.150.163/game/parameters'")
+                .withEnv("idRoom='2'")
+                .exec().getId()).exec();
     }
 
-    @RequestMapping(value = "/parameters", method = RequestMethod.POST)
-    public ParameterMetida setParameters(@RequestBody SetMetida requestBody) {
-        ParametersRoom parametersRoom = parametersRoomRepository.getByIdIdRoom(requestBody.getId());
+    @RequestMapping(value = "/parameters/{idRoom}", method = RequestMethod.GET)
+    public ParameterMetida setParameters(@PathVariable int idRoom) {
+        ParametersRoom parametersRoom = parametersRoomRepository.getByIdIdRoom(idRoom);
         JSONObject json = new JSONObject(parametersRoom.getValue());
 
-        List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(requestBody.getId());
+        List<UsersRoom> usersRoomList = usersRoomRepository.getByIdIdRoom(idRoom);
         List<StrategyJson> strategyJsonList = new ArrayList<>();
         for (UsersRoom us : usersRoomList) {
             LOGGER.info(String.valueOf(us.getId().getIdUser()));
@@ -241,5 +244,3 @@ public class GameController {
 
 
 }
-
-// рест. раннер запускаем на виртуалке,
