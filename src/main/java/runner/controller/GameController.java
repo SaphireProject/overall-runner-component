@@ -62,7 +62,7 @@ public class GameController {
     @Autowired
     JwtGenerator jwtGenerator;
 
-    @RequestMapping(value = "/game/start", method = RequestMethod.GET)
+    @RequestMapping(value = "idOfRoom/game/start", method = RequestMethod.GET)
     public void startMatida(@RequestParam("idOfRoom") int idOfRoom) {
         DefaultDockerClientConfig config
                 = DefaultDockerClientConfig.createDefaultConfigBuilder()
