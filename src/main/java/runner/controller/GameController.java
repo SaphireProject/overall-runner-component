@@ -88,7 +88,7 @@ public class GameController {
     }
 
     @RequestMapping(value = "{idRoom}/game/parameters", method = RequestMethod.GET)
-    public ParameterMetida setParameters(@PathVariable(name = "idRoom") int idRoom) {
+    public ParameterMetida setParameters(@PathVariable int idRoom) {
         ParametersRoom parametersRoom = parametersRoomRepository.getByIdIdRoom(idRoom);
         JSONObject json = new JSONObject(parametersRoom.getValue());
 
