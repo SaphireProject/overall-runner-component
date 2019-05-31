@@ -83,7 +83,7 @@ public class GameController {
         room.setStarted(true);
         roomRepository.save(room);
 
-        String id = dockerClient.createContainerCmd("0a467942fb65")
+        String id = dockerClient.createContainerCmd("metida:latest")
                 .withEnv("RUNNER_URL=http://85.119.150.240:8085/" + idOfRoom)
                 .exec().getId();
 
