@@ -107,7 +107,6 @@ public class RoomController {
 
             HttpEntity<String> entity = new HttpEntity<>("", headers);
 
-
             ResponseEntity<String> responseUser = null;
                 RestTemplate restTemplate = new RestTemplate();
                 responseUser = restTemplate.exchange(

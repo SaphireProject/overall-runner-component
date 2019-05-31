@@ -97,7 +97,7 @@ public class GameController {
         for (UsersRoom us : usersRoomList) {
             LOGGER.info(String.valueOf(us.getId().getIdUser()));
             String strategy = strategiesRepository.getById(us.getIdStrategy()).getDescription();
-            String name = strategiesRepository.getById(us.getIdStrategy()).getName();
+            String name = us.getChosenTank();
             StrategyJson strategyJson = new StrategyJson(us.getIdStrategy(), name, strategy);
             strategyJsonList.add(strategyJson);
         }
