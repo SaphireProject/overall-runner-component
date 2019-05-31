@@ -190,7 +190,7 @@ public class RoomController {
         int idUser = Integer.parseInt(idOfInvite.substring(index + 1));
 
         UsersRoom us = new UsersRoom(idRoom, idUser);
-        usersRoomService.deleteUsersRoom(us);
+        usersRoomRepository.delete(us);
         InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(true, 0, 0);
 
         return inviteUserDeleteJson;
@@ -201,7 +201,7 @@ public class RoomController {
                                                   @RequestParam("idOfRoom") int idOfRoom) {
 
         UsersRoom us = new UsersRoom(idOfRoom, idOfUser);
-        usersRoomService.deleteUsersRoom(us);
+        usersRoomRepository.delete(us);
 
         InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(
                 true,
@@ -219,7 +219,7 @@ public class RoomController {
         String username = jsonObject.getString("username");
 
         UsersRoom us = new UsersRoom(idOfRoom, idOfUser);
-        usersRoomService.deleteUsersRoom(us);
+        usersRoomRepository.delete(us);
 
         InviteUserDeleteJson inviteUserDeleteJson = new InviteUserDeleteJson(true, 0, idOfRoom);
         return inviteUserDeleteJson;

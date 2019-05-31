@@ -134,7 +134,7 @@ public class InviteController {
                         emailOfAdmin, countOfPlayers, heightOfMapForGame, widthOfMapForGame);
                 list.add(inviteJson);
                 us.setCheckInvite(true);
-                usersRoomService.updateUsersRoom(us);
+                usersRoomRepository.save(us);
             }
 
         }
@@ -234,7 +234,7 @@ public class InviteController {
         UsersRoom us = new UsersRoom(idRoom, idUser);
         us.setCheckInvite(true);
         us.setStatus(1);
-        usersRoomService.updateUsersRoom(us);
+        usersRoomRepository.save(us);
 
         InviteJson inviteJson = new InviteJson(idOfInvite,
                 idRoom,

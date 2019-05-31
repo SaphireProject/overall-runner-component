@@ -120,7 +120,7 @@ public class UserController {
             usersRoom.setIdStrategy(idOfChosenStrategy);
             usersRoom.setStatus(2);
             usersRoom.setCheckInvite(true);
-            usersRoomService.updateUsersRoom(usersRoom);
+            usersRoomRepository.save(usersRoom);
         }
 
         UserReadyJson userReadyJson = new UserReadyJson(true, username,
