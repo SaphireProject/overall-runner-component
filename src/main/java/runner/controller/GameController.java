@@ -117,7 +117,7 @@ public class GameController {
     public GameSnapshot getSnapshots(@RequestHeader("Authorization") String request,
                                      @RequestParam("page") int page,
                                      @RequestParam("size") int size,
-                                     @PathVariable(name = "idRoom") int idRoom) throws Exception {
+                                     @RequestParam("idRoom") int idRoom) throws Exception {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
         UsersRoom us = usersRoomRepository.getByIdIdUser(id);
