@@ -64,21 +64,20 @@ public class InviteController {
 
         Integer id = null;
         String email = null;
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> responseUser = restTemplate.exchange(
-                    URL_USER_INFO,
-                    HttpMethod.POST,
-                    entity,
-                    String.class);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseUser = restTemplate.exchange(
+                URL_USER_INFO,
+                HttpMethod.POST,
+                entity,
+                String.class);
 
-            jsonObject = new JSONObject(responseUser.getBody());
+        jsonObject = new JSONObject(responseUser.getBody());
 
-            id = jsonObject.getInt("id");
-            email = jsonObject.getString("email");
+        id = jsonObject.getInt("id");
+        email = jsonObject.getString("email");
 
-        UsersRoomService usersRoomService = new UsersRoomService();
         UsersRoom usersRoom = new UsersRoom(idOfRoom, id);
-            usersRoomService.saveUsersRoom(usersRoom);
+        usersRoomRepository.save(usersRoom);
 
         InviteUserJson inviteUserJson = new InviteUserJson(id, email, name, idOfRoom);
 
