@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface StrategiesRepository extends CrudRepository<Strategies, Integer> {
-    List<Strategies> getByIdUserAndTypeGame(Integer id, String type);
+    List<Strategies> getByIdUser(Integer id);
     Strategies getById(Integer id);
 
 }

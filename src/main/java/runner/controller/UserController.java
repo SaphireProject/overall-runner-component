@@ -43,11 +43,13 @@ public class UserController {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
 
+        LOGGER.info(String.valueOf(id));
+
         List<StrategyJson> list = new ArrayList<>();
 
         List<Strategies> strategiesList = null;
         try {
-            strategiesList = strategiesRepository.getByIdUserAndTypeGame(id, game);
+            strategiesList = strategiesRepository.getByIdUser(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Strategy was not found.");
         }
