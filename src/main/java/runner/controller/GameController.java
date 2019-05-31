@@ -26,10 +26,7 @@ import runner.data.SetMetida;
 import runner.jsonObject.*;
 import runner.jsonObjectUI.GameSnapshot;
 import runner.jsonObjectUI.StrategyJson;
-import runner.models.ParametersRoom;
-import runner.models.Snapshots;
-import runner.models.SnapshotsHelper;
-import runner.models.UsersRoom;
+import runner.models.*;
 import runner.repository.*;
 
 import java.util.ArrayList;
@@ -62,6 +59,9 @@ public class GameController {
     @Autowired
     JwtGenerator jwtGenerator;
 
+    @Autowired
+    RoomRepository roomRepository;
+
     @RequestMapping(value = "/{idOfRoom}/game/start", method = RequestMethod.GET)
     public void startMatida(@PathVariable("idOfRoom") int idOfRoom) {
         DefaultDockerClientConfig config
@@ -78,6 +78,10 @@ public class GameController {
         for (Image image : list) {
             LOGGER.info(image.getId());
         }
+
+        Room room = roomRepository.findById(idOfRoom);
+        room.setStarted(true);
+        roomRepository.save(room);
 
         String id = dockerClient.createContainerCmd("180c01b59c0e")
                 .withEnv("RUNNER_URL=http://85.119.150.163:8085/" + idOfRoom)
@@ -117,24 +121,24 @@ public class GameController {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
         UsersRoom us = usersRoomRepository.getByIdIdUser(id);
-            GameSnapshot gameSnapshot = new GameSnapshot();
-            List<FrameJson> listS = new ArrayList<>();
-            List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
-            for (Snapshots snapshots : snapshotsList) {
-
-                Gson gson = new Gson();
-                FrameJson frameJson = gson.fromJson(snapshots.getSnapshot(), FrameJson.class);
-
-                listS.add(frameJson);
-            }
+        GameSnapshot gameSnapshot = new GameSnapshot();
+        List<FrameJson> listS = new ArrayList<>();
+        List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
+        for (Snapshots snapshots : snapshotsList) {
 
             Gson gson = new Gson();
-            SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
-            PreloadJson preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
-            gameSnapshot.setPreload(preloadFinalJson);
-            gameSnapshot.setFrames(listS);
+            FrameJson frameJson = gson.fromJson(snapshots.getSnapshot(), FrameJson.class);
 
-            return gameSnapshot;
+            listS.add(frameJson);
+        }
+
+        Gson gson = new Gson();
+        SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
+        PreloadJson preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
+        gameSnapshot.setPreload(preloadFinalJson);
+        gameSnapshot.setFrames(listS);
+
+        return gameSnapshot;
 
     }
 
