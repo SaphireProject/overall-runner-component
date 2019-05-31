@@ -120,7 +120,6 @@ public class GameController {
                                      @RequestParam("idRoom") int idRoom) throws Exception {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
-        UsersRoom us = usersRoomRepository.getByIdIdUser(id);
         GameSnapshot gameSnapshot = new GameSnapshot();
         List<FrameJson> listS = new ArrayList<>();
         List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
