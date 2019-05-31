@@ -92,11 +92,7 @@ public class RoomController {
     public GameStatusJson gameStatus(@RequestParam("idOfRoom") int idOfRoom) {
 
         List<UsersRoom> usersRoomList = null;
-        try {
             usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room was not found.");
-        }
 
         int idOfAdmin = roomRepository.findById(idOfRoom).getIdOwner();
 
@@ -113,16 +109,12 @@ public class RoomController {
 
 
             ResponseEntity<String> responseUser = null;
-            try {
                 RestTemplate restTemplate = new RestTemplate();
                 responseUser = restTemplate.exchange(
                         URL_USER_ID + us.getId().getIdUser(),
                         HttpMethod.GET,
                         entity,
                         String.class);
-            } catch (RestClientException e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not found.");
-            }
 
             JSONObject json = new JSONObject(responseUser.getBody());
 
@@ -140,11 +132,7 @@ public class RoomController {
     public UsersRoomJson gameUsers(@RequestParam("idOfRoom") int idOfRoom) {
 
         List<UsersRoom> usersRoomList = null;
-        try {
             usersRoomList = usersRoomRepository.getByIdIdRoom(idOfRoom);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room was not found.");
-        }
 
         List<UserRoomJson> list = new ArrayList<>();
         for (UsersRoom us : usersRoomList) {
@@ -158,16 +146,12 @@ public class RoomController {
             HttpEntity<String> entity = new HttpEntity<>("", headers);
 
             ResponseEntity<String> responseUser = null;
-            try {
                 RestTemplate restTemplate = new RestTemplate();
                 responseUser = restTemplate.exchange(
                         URL_USER_ID + idOfUser,
                         HttpMethod.GET,
                         entity,
                         String.class);
-            } catch (RestClientException e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not found.");
-            }
 
             JSONObject json = new JSONObject(responseUser.getBody());
             String username = json.getString("username");

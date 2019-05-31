@@ -48,11 +48,7 @@ public class UserController {
         List<StrategyJson> list = new ArrayList<>();
 
         List<Strategies> strategiesList = null;
-        try {
             strategiesList = strategiesRepository.getByIdUser(id);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Strategy was not found.");
-        }
 
         for (Strategies strategies : strategiesList) {
             StrategyJson strategyJson = new StrategyJson(strategies.getId(), strategies.getName(), "");

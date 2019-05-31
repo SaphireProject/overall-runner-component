@@ -117,7 +117,6 @@ public class GameController {
 
         int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
         UsersRoom us = usersRoomRepository.getByIdIdUser(id);
-        if (us.getId().getIdRoom() == idRoom) {
             GameSnapshot gameSnapshot = new GameSnapshot();
             List<FrameJson> listS = new ArrayList<>();
             List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
@@ -136,9 +135,6 @@ public class GameController {
             gameSnapshot.setFrames(listS);
 
             return gameSnapshot;
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room was not found.");
-        }
 
     }
 

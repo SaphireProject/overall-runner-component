@@ -64,7 +64,6 @@ public class InviteController {
 
         Integer id = null;
         String email = null;
-        try {
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<String> responseUser = restTemplate.exchange(
                     URL_USER_INFO,
@@ -76,19 +75,10 @@ public class InviteController {
 
             id = jsonObject.getInt("id");
             email = jsonObject.getString("email");
-        } catch (RestClientException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not found.");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
         UsersRoomService usersRoomService = new UsersRoomService();
         UsersRoom usersRoom = new UsersRoom(idOfRoom, id);
-        try {
             usersRoomService.saveUsersRoom(usersRoom);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User has already been added.");
-        }
 
         InviteUserJson inviteUserJson = new InviteUserJson(id, email, name, idOfRoom);
 
