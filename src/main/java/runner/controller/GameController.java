@@ -201,12 +201,11 @@ public class GameController {
              Channel channel = connection.createChannel()) {
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
             channel.basicPublish("", QUEUE_NAME, null, json.getBytes("UTF-8"));
-            System.out.println(" [x] Sent '" + json + "'");
-
+            LOGGER.info(" [x] Sent '" + json + "'");
             counter.increaseNumber();
         }
 
-        LOGGER.info(String.valueOf(counter.getNumber()));
+        LOGGER.info("Counter {}", counter.getNumber());
 
         if (counter.getNumber() == 10) {
             factory = new ConnectionFactory();
@@ -222,7 +221,7 @@ public class GameController {
                 Snapshots snapshots = new Snapshots();
                 snapshots.setSnapshot(message);
                 snapshots.setIdRoom(idRoom);
-
+                LOGGER.info("Save {}", snapshots);
                 snapshotsRepository.save(snapshots);
             };
             channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
