@@ -129,13 +129,13 @@ public class GameController {
             listS.add(frameJson);
         }
 
-        //PreloadJson preloadFinalJson = new PreloadJson();
-        //Gson gson = new Gson();
-        //SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
-        //preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
+        PreloadJson preloadFinalJson = new PreloadJson();
+        Gson gson = new Gson();
+        SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
+        preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
 
         GameSnapshot gameSnapshot = new GameSnapshot();
-        gameSnapshot.setPreload(null);
+        gameSnapshot.setPreload(preloadFinalJson);
         gameSnapshot.setFrames(listS);
 
         return gameSnapshot;
@@ -168,7 +168,7 @@ public class GameController {
 // preloadForDB.setValue(jsonPreload);
 
         Gson gson = new Gson();
-        String json = gson.toJson(preloadJson.getBlocks());
+        String json = gson.toJson(preloadJson);
 
         SnapshotsHelper snapshotsHelper = new SnapshotsHelper(idRoom, "preload");
         snapshotsHelper.setValue(json);
