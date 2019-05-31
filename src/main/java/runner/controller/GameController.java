@@ -119,8 +119,6 @@ public class GameController {
                                      @RequestParam("size") int size,
                                      @RequestParam("idRoom") int idRoom) throws Exception {
 
-        int id = jwtGenerator.decodeNew(request).getUserData().getId().intValue();
-        GameSnapshot gameSnapshot = new GameSnapshot();
         List<FrameJson> listS = new ArrayList<>();
         List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
         for (Snapshots snapshots : snapshotsList) {
@@ -131,10 +129,13 @@ public class GameController {
             listS.add(frameJson);
         }
 
+        PreloadJson preloadFinalJson = new PreloadJson();
         Gson gson = new Gson();
         SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
-        PreloadJson preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
-        gameSnapshot.setPreload(preloadFinalJson);
+        preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
+
+        GameSnapshot gameSnapshot = new GameSnapshot();
+        gameSnapshot.setPreload(null);
         gameSnapshot.setFrames(listS);
 
         return gameSnapshot;
