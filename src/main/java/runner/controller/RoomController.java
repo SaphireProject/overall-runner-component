@@ -86,7 +86,7 @@ public class RoomController {
         return responceRoomJson;
     }
 
-    static final String URL_USER_ID = "http://localhost:8084/user/";
+    static final String URL_USER_ID = "http://85.119.150.240:8084/user/";
 
     @RequestMapping(value = "/game-status", method = RequestMethod.GET)
     public GameStatusJson gameStatus(@RequestParam("idOfRoom") int idOfRoom) {
@@ -179,7 +179,7 @@ public class RoomController {
         return gameIsStartedJson;
     }
 
-    static final String URL_USER_INFO = "http://localhost:8084/user/info";
+    static final String URL_USER_INFO = "http://85.119.150.240:8084/user/info";
 
 
     @RequestMapping(value = "/invite-user", method = RequestMethod.DELETE)

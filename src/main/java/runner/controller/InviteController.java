@@ -43,10 +43,10 @@ public class InviteController {
     @Autowired
     RoomRepository roomRepository;
 
-    static final String URL_USER_ID = "http://localhost:8084/user/";
+    static final String URL_USER_ID = "http://85.119.150.240:8084/user/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InviteController.class);
-    static final String URL_USER_INFO = "http://localhost:8084/user/info";
+    static final String URL_USER_INFO = "http://85.119.150.240:8084/user/info";
 
     @RequestMapping(value = "/invite-user", method = RequestMethod.POST)
     public InviteUserJson inviteUser(@RequestHeader("Authorization") String requestHeader, @RequestBody String requestBody) {

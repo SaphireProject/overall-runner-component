@@ -72,7 +72,7 @@ public class UserController {
         return strategyJson;
     }
 
-    static final String URL_USER_INFO = "http://localhost:8084/user/info";
+    static final String URL_USER_INFO = "http://85.119.150.240:8084/user/info";
 
     @RequestMapping(value = "/user-ready", method = RequestMethod.POST)
     public UserReadyJson userReady(@RequestBody String requestBody) {
