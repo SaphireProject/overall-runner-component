@@ -21,7 +21,7 @@ public class UsersRoom {
     private Integer idstrategy;
 
     @Column
-    private boolean checkinvite;
+    private Boolean checkinvite;
 
     public UsersRoom(Integer idRoom, Integer idUser) {
         UsersRoomId usersRoomId = new UsersRoomId(idRoom, idUser);
@@ -33,7 +33,7 @@ public class UsersRoom {
     public UsersRoom() {
     }
 
-    public boolean isCheckInvite() {
+    public Boolean isCheckInvite() {
         return checkinvite;
     }
 
