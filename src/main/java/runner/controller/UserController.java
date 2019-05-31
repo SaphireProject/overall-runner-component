@@ -142,7 +142,7 @@ public class UserController {
 
         int countOfNotifications = 0;
         for (UsersRoom us : usersRoomList) {
-            if (!us.isCheckInvite()) {
+            if (us.isCheckInvite() == null || !us.isCheckInvite()) {
                 countOfNotifications++;
             }
         }
