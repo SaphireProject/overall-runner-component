@@ -79,10 +79,6 @@ public class GameController {
             LOGGER.info(image.getId());
         }
 
-        Room room = roomRepository.findById(idOfRoom);
-        room.setStarted(true);
-        roomRepository.save(room);
-
         String id = dockerClient.createContainerCmd("metida:latest")
                 .withEnv("RUNNER_URL=http://85.119.150.240:8085/" + idOfRoom)
                 .exec().getId();
@@ -213,7 +209,7 @@ public class GameController {
 
         LOGGER.info("Counter {}", counter.getNumber());
 
-        if (counter.getNumber() == 10) {
+        if (counter.getNumber() == 30) {
             factory = new ConnectionFactory();
             factory.setHost("localhost");
             Connection connection = factory.newConnection();
@@ -234,6 +230,10 @@ public class GameController {
             });
 
             counter.resetNumber();
+
+            Room room = roomRepository.findById(idRoom);
+            room.setStarted(true);
+            roomRepository.save(room);
         }
 
     }
