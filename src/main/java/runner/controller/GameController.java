@@ -135,7 +135,7 @@ public class GameController {
         preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
 
         GameSnapshot gameSnapshot = new GameSnapshot();
-        gameSnapshot.setPreload(null);
+        gameSnapshot.setPreload(preloadFinalJson);
         gameSnapshot.setFrames(listS);
 
         return gameSnapshot;
@@ -151,7 +151,6 @@ public class GameController {
         PreloadFinalJson preloadFinalJson1 = new PreloadFinalJson();
         preloadFinalJson1.setPreload(preloadJson1);
 
-        LOGGER.info(preloadFinalJson1.toString());
 // PreloadForDB preloadForDB = new PreloadForDB();
 // preloadForDB.setIdGame(idGame);
 
@@ -165,11 +164,14 @@ public class GameController {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        LOGGER.info(jsonPreload);
+
 // preloadForDB.setValue(jsonPreload);
 
+        Gson gson = new Gson();
+        String json = gson.toJson(preloadJson.getBlocks());
+
         SnapshotsHelper snapshotsHelper = new SnapshotsHelper(idRoom, "preload");
-        snapshotsHelper.setValue(jsonPreload);
+        snapshotsHelper.setValue(json);
         snapshotsHelperRepository.save(snapshotsHelper);
     }
 
