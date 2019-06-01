@@ -11,23 +11,22 @@ import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import runner.config.JwtGenerator;
 import runner.data.Counter;
 import runner.data.ParameterMetida;
-import runner.data.SetMetida;
-import runner.jsonObject.*;
+import runner.jsonObject.FrameJson;
+import runner.jsonObject.PreloadFinalJson;
+import runner.jsonObject.PreloadJson;
 import runner.jsonObjectUI.GameSnapshot;
 import runner.jsonObjectUI.StrategyJson;
 import runner.models.*;
 import runner.repository.*;
+import runner.thread.ThreadQueue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,10 +56,12 @@ public class GameController {
     SnapshotsRepository snapshotsRepository;
 
     @Autowired
-    JwtGenerator jwtGenerator;
+    RoomRepository roomRepository;
+
+    ConnectionFactory factory = new ConnectionFactory();
 
     @Autowired
-    RoomRepository roomRepository;
+    ThreadQueue threadQueue;
 
     @RequestMapping(value = "/{idOfRoom}/game/start", method = RequestMethod.GET)
     public void startMatida(@PathVariable("idOfRoom") int idOfRoom) {
@@ -79,12 +80,19 @@ public class GameController {
             LOGGER.info(image.getId());
         }
 
+        Room room = roomRepository.findById(idOfRoom);
+        room.setStarted(true);
+        roomRepository.save(room);
+
         String id = dockerClient.createContainerCmd("metida:latest")
                 .withEnv("RUNNER_URL=http://85.119.150.240:8085/" + idOfRoom)
                 .exec().getId();
 
         LOGGER.info("Id container {}", id);
         dockerClient.startContainerCmd(id).exec();
+
+        threadQueue = new ThreadQueue();
+        threadQueue.run();
     }
 
     @RequestMapping(value = "{idRoom}/game/parameters", method = RequestMethod.GET)
@@ -173,31 +181,9 @@ public class GameController {
 
     @RequestMapping(value = "{idRoom}/game/animation")
     public void getFrameJson(@RequestBody FrameJson frameJson, @PathVariable(name = "idRoom") int idRoom) throws Exception {
-//        FrameJson frameJson1 = new FrameJson();
-//        frameJson1.setSnapshotNumber(frameJson.getSnapshotNumber());
-//        frameJson1.setAnimations(frameJson.getAnimations());
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-//
-//        String jsonFrame = null;
-//
-//        try {
-//            jsonFrame = mapper.writeValueAsString(frameJson);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
-//
-//        FrameForDB frameForDB = new FrameForDB();
-//        frameForDB.setId(frameJson.getSnapshotNumber());
-//        frameForDB.setValue(jsonFrame);
-
-        //куда то сохранять
-
         Gson gson = new Gson();
         String json = gson.toJson(frameJson);
 
-        ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
@@ -209,32 +195,7 @@ public class GameController {
 
         LOGGER.info("Counter {}", counter.getNumber());
 
-        if (counter.getNumber() == 30) {
-            factory = new ConnectionFactory();
-            factory.setHost("localhost");
-            Connection connection = factory.newConnection();
-            Channel channel = connection.createChannel();
-
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-
-            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                String message = new String(delivery.getBody(), "UTF-8");
-
-                Snapshots snapshots = new Snapshots();
-                snapshots.setSnapshot(message);
-                snapshots.setIdRoom(idRoom);
-                LOGGER.info("Save {}", snapshots);
-                snapshotsRepository.save(snapshots);
-            };
-            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
-            });
-
-            counter.resetNumber();
-
-            Room room = roomRepository.findById(idRoom);
-            room.setStarted(true);
-            roomRepository.save(room);
-        }
+        threadQueue.setidRoom(idRoom);
 
     }
 

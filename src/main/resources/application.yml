@@ -3,7 +3,7 @@ server:
   contextPath: "/"
 spring:
   datasource:
-    url: jdbc:postgresql://85.119.150.240:5432/mr
+    url: jdbc:postgresql://localhost:5432/mr
     username: postgres
     password: postgres
     generate-ddl: false
