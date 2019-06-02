@@ -129,7 +129,7 @@ public class InviteController {
             String usernameOfAdmin = json.getString("username");
             String emailOfAdmin = json.getString("email");
 
-            if (idOfAdmin != id) {
+            if (idOfAdmin != id && !us.isCheckInvite()) {
                 InviteJson inviteJson = new InviteJson(idOfInvite, idOfRoom, nameOfRoom, idOfAdmin, usernameOfAdmin,
                         emailOfAdmin, countOfPlayers, heightOfMapForGame, widthOfMapForGame);
                 list.add(inviteJson);

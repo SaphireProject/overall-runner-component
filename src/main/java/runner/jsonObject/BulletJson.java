@@ -1,6 +1,7 @@
 package runner.jsonObject;
 
 public class BulletJson {
+    private int id;
     private int positionX;
     private int positionY;
     private String bulletDirection;
@@ -10,12 +11,20 @@ public class BulletJson {
     public BulletJson() {
     }
 
-    public BulletJson(int positionX , int positionY , String bulletDirection , boolean isFirstSnapshot , boolean isLastSnapshot) {
+    public BulletJson(int id, int positionX, int positionY, String bulletDirection, boolean isFirstSnapshot, boolean isLastSnapshot) {
         this.positionX = positionX;
         this.positionY = positionY;
         this.bulletDirection = bulletDirection;
         this.isFirstSnapshot = isFirstSnapshot;
         this.isLastSnapshot = isLastSnapshot;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getPositionX() {
