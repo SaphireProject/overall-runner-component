@@ -3,6 +3,10 @@ package runner.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientBuilder;
 import com.google.gson.Gson;
 import com.rabbitmq.client.*;
 import org.json.JSONObject;
@@ -58,7 +62,7 @@ public class GameController {
 
     @RequestMapping(value = "/{idOfRoom}/game/start", method = RequestMethod.GET)
     public void startMatida(@PathVariable("idOfRoom") int idOfRoom) {
-        /*DefaultDockerClientConfig config
+        DefaultDockerClientConfig config
                 = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withRegistryEmail("vorotnikov_dmitry@mail.ru")
                 .withRegistryPassword("b0lx9fqg")
@@ -78,7 +82,7 @@ public class GameController {
                 .exec().getId();
 
         LOGGER.info("Id container {}", id);
-        dockerClient.startContainerCmd(id).exec();*/
+        dockerClient.startContainerCmd(id).exec();
 
         threadQueue = new ThreadQueue(idOfRoom);
         threadQueue.start();
@@ -117,7 +121,7 @@ public class GameController {
 
         List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
 
-        if (snapshotsList.size() != 0) {
+        if (snapshotsList.size() == size) {
             listS = new ArrayList<>();
             for (Snapshots snapshots : snapshotsList) {
 
@@ -217,7 +221,7 @@ public class GameController {
             try {
 
                 while (true) {
-                    if (counter.getNumber() > 3) {
+                    if (counter.getNumber() == 30) {
                         Connection connection = factory.newConnection();
                         Channel channel = connection.createChannel();
                         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
