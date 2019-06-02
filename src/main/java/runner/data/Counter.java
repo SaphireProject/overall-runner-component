@@ -5,7 +5,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class Counter {
 
-    private int number = 0;
+    private int number;
+
+    public Counter() {
+        this.number = 0;
+    }
 
     public int getNumber() {
         return number;

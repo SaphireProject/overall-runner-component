@@ -3,20 +3,13 @@ package runner.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.google.gson.Gson;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.*;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import runner.config.JwtGenerator;
 import runner.data.Counter;
 import runner.data.ParameterMetida;
 import runner.jsonObject.FrameJson;
@@ -26,10 +19,11 @@ import runner.jsonObjectUI.GameSnapshot;
 import runner.jsonObjectUI.StrategyJson;
 import runner.models.*;
 import runner.repository.*;
-import runner.thread.ThreadQueue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 @RestController
 public class GameController {
@@ -60,12 +54,11 @@ public class GameController {
 
     ConnectionFactory factory = new ConnectionFactory();
 
-    @Autowired
     ThreadQueue threadQueue;
 
     @RequestMapping(value = "/{idOfRoom}/game/start", method = RequestMethod.GET)
     public void startMatida(@PathVariable("idOfRoom") int idOfRoom) {
-        DefaultDockerClientConfig config
+        /*DefaultDockerClientConfig config
                 = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withRegistryEmail("vorotnikov_dmitry@mail.ru")
                 .withRegistryPassword("b0lx9fqg")
@@ -80,19 +73,15 @@ public class GameController {
             LOGGER.info(image.getId());
         }
 
-        Room room = roomRepository.findById(idOfRoom);
-        room.setStarted(true);
-        roomRepository.save(room);
-
         String id = dockerClient.createContainerCmd("metida:latest")
                 .withEnv("RUNNER_URL=http://85.119.150.240:8085/" + idOfRoom)
                 .exec().getId();
 
         LOGGER.info("Id container {}", id);
-        dockerClient.startContainerCmd(id).exec();
+        dockerClient.startContainerCmd(id).exec();*/
 
-        threadQueue = new ThreadQueue();
-        threadQueue.run();
+        threadQueue = new ThreadQueue(idOfRoom);
+        threadQueue.start();
     }
 
     @RequestMapping(value = "{idRoom}/game/parameters", method = RequestMethod.GET)
@@ -123,20 +112,25 @@ public class GameController {
                                      @RequestParam("size") int size,
                                      @RequestParam("idRoom") int idRoom) throws Exception {
 
-        List<FrameJson> listS = new ArrayList<>();
+        PreloadJson preloadFinalJson = null;
+        List<FrameJson> listS = null;
+
         List<Snapshots> snapshotsList = snapshotsRepository.findAll(idRoom, page, size);
-        for (Snapshots snapshots : snapshotsList) {
+
+        if (snapshotsList.size() != 0) {
+            listS = new ArrayList<>();
+            for (Snapshots snapshots : snapshotsList) {
+
+                Gson gson = new Gson();
+                FrameJson frameJson = gson.fromJson(snapshots.getSnapshot(), FrameJson.class);
+
+                listS.add(frameJson);
+            }
 
             Gson gson = new Gson();
-            FrameJson frameJson = gson.fromJson(snapshots.getSnapshot(), FrameJson.class);
-
-            listS.add(frameJson);
+            SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
+            preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
         }
-
-        PreloadJson preloadFinalJson = new PreloadJson();
-        Gson gson = new Gson();
-        SnapshotsHelper snapshotsHelper = snapshotsHelperRepository.getByIdIdRoom(idRoom);
-        preloadFinalJson = gson.fromJson(snapshotsHelper.getValue(), PreloadJson.class);
 
         GameSnapshot gameSnapshot = new GameSnapshot();
         gameSnapshot.setPreload(preloadFinalJson);
@@ -180,7 +174,8 @@ public class GameController {
     }
 
     @RequestMapping(value = "{idRoom}/game/animation")
-    public void getFrameJson(@RequestBody FrameJson frameJson, @PathVariable(name = "idRoom") int idRoom) throws Exception {
+    public void getFrameJson(@RequestBody FrameJson frameJson,
+                             @PathVariable(name = "idRoom") int idRoom) throws Exception {
         Gson gson = new Gson();
         String json = gson.toJson(frameJson);
 
@@ -191,12 +186,14 @@ public class GameController {
             channel.basicPublish("", QUEUE_NAME, null, json.getBytes("UTF-8"));
             LOGGER.info(" [x] Sent '" + json + "'");
             counter.increaseNumber();
+
+            synchronized (threadQueue) {
+                threadQueue.notify();
+            }
+
         }
 
         LOGGER.info("Counter {}", counter.getNumber());
-
-        threadQueue.setidRoom(idRoom);
-
     }
 
     @RequestMapping(value = "/game/strategy", method = RequestMethod.GET)
@@ -205,5 +202,64 @@ public class GameController {
         return str;
     }
 
+    class ThreadQueue extends Thread {
 
+        private int idRoom;
+
+        private boolean bool = false;
+
+        public ThreadQueue(int idRoom) {
+            this.idRoom = idRoom;
+        }
+
+        @Override
+        public void run() {
+            try {
+
+                while (true) {
+                    if (counter.getNumber() > 3) {
+                        Connection connection = factory.newConnection();
+                        Channel channel = connection.createChannel();
+                        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+
+                        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                            String message = new String(delivery.getBody(), "UTF-8");
+
+                            Snapshots snapshots = new Snapshots();
+                            snapshots.setSnapshot(message);
+                            snapshots.setIdRoom(idRoom);
+                            snapshots.setCounter(1);
+                            LOGGER.info("Save {}", message);
+                            try {
+                                snapshotsRepository.save(snapshots);
+                            } catch (Exception e) {
+                                LOGGER.info(String.valueOf(e));
+                            }
+
+                        };
+                        channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
+                        });
+
+                        if (!bool) {
+                            Room room = roomRepository.findById(idRoom);
+                            room.setStarted(true);
+                            roomRepository.save(room);
+                            bool = true;
+                        }
+                        counter.resetNumber();
+                    }
+                    synchronized (this) {
+                        this.wait();
+                    }
+                }
+
+            } catch (IOException e) {
+                LOGGER.info("IOException = " + e);
+            } catch (TimeoutException e) {
+                LOGGER.info("TimeoutException = " + e);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

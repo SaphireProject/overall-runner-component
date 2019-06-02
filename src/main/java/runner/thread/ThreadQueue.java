@@ -7,68 +7,81 @@ import com.rabbitmq.client.DeliverCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import runner.data.Counter;
+import runner.models.Room;
 import runner.models.Snapshots;
+import runner.repository.RoomRepository;
 import runner.repository.SnapshotsRepository;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-@Component
 public class ThreadQueue implements Runnable {
 
     private int idRoom;
 
+    Counter counter;
+
     @Autowired
     SnapshotsRepository snapshotsRepository;
+
+    @Autowired
+    RoomRepository roomRepository;
 
     ConnectionFactory factory = new ConnectionFactory();
 
     private final static String QUEUE_NAME = "snapshots";
 
-    @Autowired
-    Counter counter;
+
+    private boolean bool = false;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThreadQueue.class);
 
-    public ThreadQueue() {
-    }
-
-    public void setidRoom(int idRoom) {
+    public ThreadQueue(int idRoom, Counter counter) {
         this.idRoom = idRoom;
-        run();
+        this.counter = counter;
     }
 
     @Override
     public void run() {
         try {
-            if (counter.getNumber() == 2) {
-                factory = new ConnectionFactory();
-                factory.setHost("localhost");
-                Connection connection = factory.newConnection();
-                Channel channel = connection.createChannel();
+            while (true) {
+                if (counter.getNumber() > 3) {
+                    LOGGER.info(String.valueOf(counter.getNumber()));
 
-                channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+                    factory = new ConnectionFactory();
+                    factory.setHost("localhost");
+                    Connection connection = factory.newConnection();
+                    Channel channel = connection.createChannel();
 
-                DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                    String message = new String(delivery.getBody(), "UTF-8");
+                    channel.queueDeclare(QUEUE_NAME, false, false, false, null);
 
-                    Snapshots snapshots = new Snapshots();
-                    snapshots.setSnapshot(message);
-                    snapshots.setIdRoom(idRoom);
-                    snapshots.setCounter(1);
-                    LOGGER.info("Save {}", message);
-                    try {
-                        snapshotsRepository.save(snapshots);
-                    } catch (Exception e) {
-                        LOGGER.info(String.valueOf(e));
+                    DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                        String message = new String(delivery.getBody(), "UTF-8");
+
+                        Snapshots snapshots = new Snapshots();
+                        snapshots.setSnapshot(message);
+                        snapshots.setIdRoom(idRoom);
+                        snapshots.setCounter(1);
+                        LOGGER.info("Save {}", message);
+                        try {
+                            snapshotsRepository.save(snapshots);
+                        } catch (Exception e) {
+                            LOGGER.info(String.valueOf(e));
+                        }
+                    };
+                    channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
+                    });
+
+                    if (!bool) {
+                        Room room = roomRepository.findById(idRoom);
+                        room.setStarted(true);
+                        roomRepository.save(room);
+                        bool = true;
                     }
-                };
-                channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
-                });
 
-                counter.resetNumber();
+                    counter.resetNumber();
+                }
             }
 
         } catch (IOException e) {
