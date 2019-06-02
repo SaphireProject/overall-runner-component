@@ -11,7 +11,7 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private LocalDate createdata;
+    private LocalDate createdate;
 
     private Integer winuser;
 
@@ -24,7 +24,7 @@ public class Room {
     public Room(Integer idowner, boolean started, LocalDate localDate, Integer winuser, Integer idtemplate) {
         this.idowner = idowner;
         this.started = started;
-        this.createdata = localDate;
+        this.createdate = localDate;
         this.winuser = winuser;
         this.idtemplate = idtemplate;
     }
@@ -40,12 +40,12 @@ public class Room {
         this.id = id;
     }
 
-    public LocalDate getCreateData() {
-        return createdata;
+    public LocalDate getCreateDate() {
+        return createdate;
     }
 
-    public void setCreateData(LocalDate createdata) {
-        this.createdata = createdata;
+    public void setCreateDate(LocalDate createdate) {
+        this.createdate = createdate;
     }
 
     public Integer getWinUser() {
