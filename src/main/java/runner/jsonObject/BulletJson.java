@@ -12,6 +12,7 @@ public class BulletJson {
     }
 
     public BulletJson(int id, int positionX, int positionY, String bulletDirection, boolean isFirstSnapshot, boolean isLastSnapshot) {
+        this.id = id;
         this.positionX = positionX;
         this.positionY = positionY;
         this.bulletDirection = bulletDirection;
