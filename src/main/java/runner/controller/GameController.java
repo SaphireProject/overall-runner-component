@@ -221,7 +221,7 @@ public class GameController {
             try {
 
                 while (true) {
-                    if (counter.getNumber() == 70) {
+                    if (counter.getNumber() == 30) {
                         Connection connection = factory.newConnection();
                         Channel channel = connection.createChannel();
                         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
@@ -245,6 +245,7 @@ public class GameController {
                         });
 
                         if (!bool) {
+                            LOGGER.info("ROOOOOOOOOOOOOOOOOOOOOOM TRUE");
                             Room room = roomRepository.findById(idRoom);
                             room.setStarted(true);
                             roomRepository.save(room);
