@@ -221,7 +221,7 @@ public class GameController {
             try {
 
                 while (true) {
-                    if (counter.getNumber() == 30) {
+                    if (counter.getNumber() == 70) {
                         Connection connection = factory.newConnection();
                         Channel channel = connection.createChannel();
                         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
