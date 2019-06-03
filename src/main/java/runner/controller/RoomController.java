@@ -14,12 +14,10 @@ import org.springframework.web.server.ResponseStatusException;
 import runner.config.JwtGenerator;
 import runner.data.ParameterMetida;
 import runner.jsonObjectUI.*;
-import runner.models.ParametersRoom;
-import runner.models.Room;
-import runner.models.UsersRoom;
-import runner.models.UsersRoomId;
+import runner.models.*;
 import runner.repository.ParametersRoomRepository;
 import runner.repository.RoomRepository;
+import runner.repository.StrategiesRepository;
 import runner.repository.UsersRoomRepository;
 import runner.services.ParameterService;
 import runner.services.RoomService;
@@ -48,7 +46,7 @@ public class RoomController {
     RoomRepository roomRepository;
 
     @Autowired
-    UsersRoomService usersRoomService;
+    StrategiesRepository strategiesRepository;
 
     @RequestMapping(value = "/room", method = RequestMethod.POST)
     public RoomJson roomCreate(@RequestBody String response) {
@@ -78,6 +76,9 @@ public class RoomController {
         us.setCheckInvite(true);
         us.setStatus(1);
         usersRoomRepository.save(us);
+
+        Strategies strategies = new Strategies(idOfAdmin, "Tank tank;public void execute(){tank.shoot(Direction.LEFT);tank.shoot(Direction.DOWN);for(int i=0;i<5;i++){tank.moveRight();tank.moveRight();tank.moveDown();tank.shoot(Direction.UP);tank.shoot(Direction.RIGHT);}for(int i=0;i<5;i++){tank.shoot(Direction.LEFT);tank.moveLeft();tank.moveUp();tank.shoot(Direction.DOWN);tank.shoot(Direction.UP);}tank.moveUp();}public void init(){tank= TankFactoryProvider.getTankFactory().getTank(1);}", "example");
+        strategiesRepository.save(strategies);
 
         RoomJson responceRoomJson = new RoomJson(room.getId(), nameOfRoom,
                 idOfAdmin, usernameOfAdmin,

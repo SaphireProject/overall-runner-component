@@ -20,6 +20,7 @@ import runner.jsonObjectUI.InvitesJson;
 import runner.models.*;
 import runner.repository.ParametersRoomRepository;
 import runner.repository.RoomRepository;
+import runner.repository.StrategiesRepository;
 import runner.repository.UsersRoomRepository;
 import runner.services.UsersRoomService;
 
@@ -42,6 +43,9 @@ public class InviteController {
 
     @Autowired
     RoomRepository roomRepository;
+
+    @Autowired
+    StrategiesRepository strategiesRepository;
 
     static final String URL_USER_ID = "http://85.119.150.240:8084/user/";
 
@@ -78,6 +82,9 @@ public class InviteController {
 
         UsersRoom usersRoom = new UsersRoom(idOfRoom, id);
         usersRoomRepository.save(usersRoom);
+
+        Strategies strategies = new Strategies(id, "Tank tank;public void execute(){tank.shoot(Direction.LEFT);tank.shoot(Direction.DOWN);for(int i=0;i<5;i++){tank.moveRight();tank.moveRight();tank.moveDown();tank.shoot(Direction.UP);tank.shoot(Direction.RIGHT);}for(int i=0;i<5;i++){tank.shoot(Direction.LEFT);tank.moveLeft();tank.moveUp();tank.shoot(Direction.DOWN);tank.shoot(Direction.UP);}tank.moveUp();}public void init(){tank= TankFactoryProvider.getTankFactory().getTank(1);}", "example");
+        strategiesRepository.save(strategies);
 
         InviteUserJson inviteUserJson = new InviteUserJson(id, email, name, idOfRoom);
 
